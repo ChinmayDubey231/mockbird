@@ -28,13 +28,35 @@ export default async function WorkspaceLayout({
 
   return (
     <>
-      <header className="topbar">
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: "inherit" }}>
+      {/*
+        This header carries a variable-length, user-supplied workspace name —
+        unlike the plain topbars elsewhere, it can't just rely on flex-wrap to
+        drop overflow onto a second line (wrapping decides line breaks off
+        each item's full content width, before any shrinking is applied, so
+        a long name would wrap the whole row instead of truncating). Forcing
+        nowrap and giving every other item flex:none makes the name the only
+        thing that shrinks, so it ellipsizes instead of wrapping anything.
+      */}
+      <header className="topbar" style={{ flexWrap: "nowrap" }}>
+        <Link
+          href="/"
+          style={{ display: "flex", alignItems: "center", gap: 10, color: "inherit", flex: "none" }}
+        >
           <Mark />
           <span className="wordmark">Mockbird</span>
         </Link>
-        <span style={{ color: "var(--ink-35)" }}>/</span>
-        <span style={{ fontWeight: 500 }}>{workspace.name}</span>
+        <span style={{ color: "var(--ink-35)", flex: "none" }}>/</span>
+        <span
+          style={{
+            fontWeight: 500,
+            minWidth: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {workspace.name}
+        </span>
 
         <span style={{ flex: 1, minWidth: 0 }} />
 
@@ -50,6 +72,10 @@ export default async function WorkspaceLayout({
       <WorkspaceTabs workspaceKey={workspace.key} />
 
       <main className="shell" style={{ maxWidth: "none" }}>{children}</main>
+
+      <footer className="muted small" style={{ marginTop: 40, padding: "16px 20px", borderTop: "1px solid var(--rule)" }}>
+        Mocks are public to anyone who has the workspace key. Don&apos;t put real data in them.
+      </footer>
     </>
   );
 }
