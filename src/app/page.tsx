@@ -64,7 +64,7 @@ export default function LandingPage() {
             // section up by that same amount and padding it back down
             // internally lets the hero's own background fill that strip too,
             // without moving the visible content (badge/heading) down.
-            padding: "80px 0 8px",
+            padding: "40px 0 8px",
             margin: "-16px -20px 0",
             paddingInline: 20,
           }}
