@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  name       String?
+  createdAt  DateTime    @default(now())
+  workspaces Workspace[]
+}
+
+model Workspace {
+  id        String       @id @default(cuid())
+  key       String       @unique // "a8f3k2" — appears in the mock URL
+  name      String
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoints Endpoint[]
+  logs      RequestLog[]
+
+  // Landing-page workspaces are created without signup and swept after 24h.
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Endpoint {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  method      String // GET | POST | PUT | PATCH | DELETE
+  path        String // "/orders" or "/orders/:id"
+  segments    Json   // pre-parsed path segments — see src/lib/path.ts
+  specificity Int    // pre-computed sort key — see src/lib/path.ts
+
+  description  String? // the English prompt the user typed
+  schema       Json? // generated JSON Schema
+  responseBody Json // what actually gets returned
+  statusCode   Int   @default(200)
+  headers      Json  @default("{}")
+
+  // behaviour controls
+  delayMs       Int   @default(0) // 0–8000
+  failureRate   Int   @default(0) // 0–100 percent
+  failureStatus Int   @default(500)
+  failureBody   Json?
+
+  isActive  Boolean  @default(true)
+  hitCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, method, path])
+  @@index([workspaceId, method, specificity])
+}
+
+model RequestLog {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  endpointId  String? // null when nothing matched
+
+  method     String
+  path       String
+  query      Json
+  headers    Json // authorization and cookie are stripped before storing
+  body       Json?
+  statusCode Int
+  durationMs Int
+  matched    Boolean
+  note       String? // "injected failure", "did you mean /orders?"
+  createdAt  DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+}

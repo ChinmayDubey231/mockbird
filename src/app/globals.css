@@ -1,0 +1,867 @@
+/* ---------------------------------------------------------------------------
+   Tokens.
+
+   The palette is the semantics of HTTP status codes. Status colour appears in
+   exactly three places — the log table, the status selector, and the failure
+   control — and nowhere else. Everything structural is ink on paper with
+   hairline rules.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f1eee9;
+  --surface: #fbfaf8;
+  --field: #ffffff;
+  --rule: #ddd9d2;
+  --rule-soft: #eae6e0;
+  --ink: #12161c;
+  --ink-rgb: 18, 22, 28;
+  --accent: #3b5bdb;
+  --accent-hi: #2a44b0;
+  --accent-rgb: 59, 91, 219;
+  --accent-2: #7c4fe0;
+  --accent-2-rgb: 124, 79, 224;
+  --ok: #1f7a4c;
+  --client-err: #b45309;
+  --client-err-rgb: 180, 83, 9;
+  --server-err: #b3261e;
+  --server-err-rgb: 179, 38, 30;
+  --code-bg: #12161c;
+  --code-fg: #e6e1d8;
+  --btn-bg: #12161c;
+  --btn-fg: #fbfaf8;
+  --btn-hi: #000000;
+  --scrim: rgba(18, 22, 28, 0.28);
+}
+
+[data-theme="dark"] {
+  --bg: #0e1116;
+  --surface: #16191f;
+  --field: #1c2027;
+  --rule: #2b313a;
+  --rule-soft: #232830;
+  --ink: #e9e5dd;
+  --ink-rgb: 233, 229, 221;
+  --accent: #93a9f7;
+  --accent-hi: #b6c5ff;
+  --accent-rgb: 147, 169, 247;
+  --accent-2: #b79bf5;
+  --accent-2-rgb: 183, 155, 245;
+  --ok: #55c58c;
+  --client-err: #e2a85c;
+  --client-err-rgb: 226, 168, 92;
+  --server-err: #f27f73;
+  --server-err-rgb: 242, 127, 115;
+  --code-bg: #090c10;
+  --code-fg: #d9d4ca;
+  --btn-bg: #e9e5dd;
+  --btn-fg: #0e1116;
+  --btn-hi: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.5);
+}
+
+:root {
+  --ink-35: rgba(var(--ink-rgb), 0.38);
+  --ink-45: rgba(var(--ink-rgb), 0.5);
+  --ink-55: rgba(var(--ink-rgb), 0.62);
+  --ink-70: rgba(var(--ink-rgb), 0.8);
+  --tint: rgba(var(--ink-rgb), 0.04);
+  --accent-tint: rgba(var(--accent-rgb), 0.09);
+
+  --sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 4px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* .hero-bg's full-bleed trick sizes itself off 100vw, which in some
+     browsers includes the scrollbar's own width — this keeps that from
+     ever showing as a few px of horizontal scroll. */
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hi);
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- type ---------------------------------------------------------------- */
+
+.mono {
+  font-family: var(--mono);
+  font-size: 14.5px;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+h1 {
+  font-size: 37px;
+  line-height: 1.15;
+}
+h2 {
+  font-size: 21px;
+}
+h3 {
+  font-size: 16px;
+}
+
+.muted {
+  color: var(--ink-55);
+}
+.small {
+  font-size: 13px;
+}
+
+.wordmark {
+  font-family: var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+/* --- surfaces ------------------------------------------------------------ */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 20px 64px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 20px;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent);
+  flex: none;
+}
+
+.topbar-base-url {
+  flex: none;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.base-url-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  background: var(--field);
+}
+
+@media (max-width: 640px) {
+  .topbar-base-url {
+    display: none;
+  }
+  .copy-btn-label {
+    display: none;
+  }
+  .base-url-pill {
+    padding: 6px;
+    border-radius: 8px;
+  }
+}
+
+/* --- controls ------------------------------------------------------------ */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease,
+    transform 150ms ease, box-shadow 200ms ease;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--btn-bg);
+  border-color: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: 0 2px 8px rgba(var(--ink-rgb), 0.14);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--btn-hi);
+  border-color: var(--btn-hi);
+  color: var(--btn-fg);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(var(--ink-rgb), 0.22);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(var(--ink-rgb), 0.18);
+}
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--server-err);
+  color: var(--server-err);
+}
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--field);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.textarea {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.range {
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--rule);
+  cursor: pointer;
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 0;
+}
+.range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 0;
+}
+
+/* --- data surfaces: no radius, hairline rules, no shadow ----------------- */
+
+/*
+ * A data table with several columns doesn't survive a narrow screen by
+ * wrapping cell text — a path like "/orders/:id" with nowhere to break
+ * ends up one letter per line. Scrolling the table horizontally instead
+ * (min-width forces that rather than letting columns get crushed) keeps
+ * every row readable; the container, not the cells, absorbs the overflow.
+ */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table {
+  width: 100%;
+  min-width: 540px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+/*
+ * The endpoint dashboard's sidebar list. flex:0 0 236px is right on desktop
+ * (a fixed rail beside the editor), but with no override it stays 236px
+ * even once the flex row wraps to a single column on a narrow screen —
+ * leaving the sidebar stranded at 236px with dead space beside it instead
+ * of filling the row.
+ */
+.endpoint-sidebar {
+  flex: 0 0 236px;
+  min-width: 220px;
+  border-right: 1px solid var(--rule);
+  padding-right: 16px;
+  align-self: stretch;
+}
+@media (max-width: 720px) {
+  .endpoint-sidebar {
+    flex: 1 1 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+}
+
+.table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-45);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+.table tbody tr:hover {
+  background: var(--tint);
+}
+
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--tint);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-70);
+}
+
+.code {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  padding: 14px 16px;
+  overflow: auto;
+  white-space: pre;
+  margin: 0;
+}
+
+.method {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-55);
+}
+
+.status-ok {
+  color: var(--ok);
+}
+.status-client {
+  color: var(--client-err);
+}
+.status-server {
+  color: var(--server-err);
+}
+
+/* The one piece of motion in the product: a row landing in the log. */
+@keyframes rowflash {
+  from {
+    background: rgba(var(--accent-rgb), 0.16);
+  }
+  to {
+    background: transparent;
+  }
+}
+.flash {
+  animation: rowflash 900ms ease-out 1;
+}
+.flash-server {
+  animation: rowflash 900ms ease-out 1;
+  background: rgba(var(--server-err-rgb), 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash,
+  .flash-server {
+    animation: none;
+  }
+}
+
+/* --- landing page: hero decoration, badges, gradient text, card lift ----- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * Clips the decorative mesh/glow without putting overflow:hidden on .hero
+ * itself. Chromium treats an overflow:hidden ancestor as a real (if
+ * invisible) scroll container: anchoring to #demo — nested inside .hero —
+ * made the browser scroll *inside* .hero as well as the page, clipping the
+ * heading and leaving dead space at the bottom of the section.
+ */
+.hero-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Full-bleed to the true viewport width rather than .hero's own box —
+     .hero sits inside main.shell (max-width: 1280px), so inset:0 here left
+     the glow/mesh unable to reach the screen edges past that width. */
+  left: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-mesh {
+  position: absolute;
+  inset: -20% -10%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(480px circle at 12% 8%, rgba(var(--accent-rgb), 0.16), transparent 60%),
+    radial-gradient(420px circle at 82% 28%, rgba(var(--accent-2-rgb), 0.14), transparent 60%);
+  filter: blur(10px);
+}
+
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    520px circle at var(--mx, 30%) var(--my, 10%),
+    rgba(var(--accent-2-rgb), 0.14),
+    transparent 65%
+  );
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-70);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.5);
+  animation: pulse-dot 2.2s ease-out infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(31, 122, 76, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(31, 122, 76, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(31, 122, 76, 0);
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px 18px 20px;
+  box-sizing: border-box;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+.feature-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: 0 10px 28px rgba(var(--ink-rgb), 0.08);
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-2-rgb), 0.14));
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.theme-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--field);
+  cursor: pointer;
+  transition: border-color 220ms ease;
+}
+.theme-switch:hover {
+  border-color: var(--accent);
+}
+.theme-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 340ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-switch-icon {
+  position: absolute;
+  top: 7px;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+.theme-switch-moon {
+  left: 7px;
+}
+.theme-switch-sun {
+  right: 6.5px;
+  top: 6.5px;
+}
+
+.active-switch {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--field);
+  cursor: pointer;
+  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+.active-switch:hover {
+  border-color: var(--accent);
+}
+.active-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.active-switch.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+}
+.active-switch-knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 1px 3px rgba(var(--ink-rgb), 0.35);
+  transition: transform 340ms cubic-bezier(0.4, 0, 0.2, 1), background-color 220ms ease;
+}
+.active-switch.is-on .active-switch-knob {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch-knob,
+  .active-switch-knob {
+    transition: none;
+  }
+}
+
+.demo-frame {
+  position: relative;
+  border-radius: 12px;
+  padding: 1.5px;
+  background: linear-gradient(120deg, rgba(var(--accent-rgb), 0.55), rgba(var(--accent-2-rgb), 0.5));
+}
+.demo-frame > .demo-inner {
+  background: var(--surface);
+  border-radius: 11px;
+  padding: 18px 18px 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-dot {
+    animation: none;
+  }
+  .feature-card {
+    transition: none;
+  }
+}
+
+/* --- landing page: nav links, route marquee, state mini-visuals ---------- */
+
+.nav-link {
+  font-size: 13px;
+  color: var(--ink-55);
+  white-space: nowrap;
+}
+.nav-link:hover {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/*
+ * The landing header has four right-side items (two nav links, the theme
+ * switch, a CTA button) — fine on desktop, but wrapping onto a second row
+ * on a phone splits them asymmetrically (one item stranded top-right,
+ * the rest crowded below). Dropping the two lower-priority ones (an
+ * anchor scroll to content already one scroll away, and a CTA that
+ * duplicates it) keeps "My workspaces" and the theme switch on one row.
+ */
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none;
+  }
+}
+
+.route-marquee {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.route-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 10px;
+  animation: marquee-scroll 38s linear infinite;
+}
+.route-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  border: 1px solid var(--rule-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: var(--field);
+}
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.state-progress {
+  position: relative;
+  height: 3px;
+  background: var(--rule);
+  border-radius: 2px;
+}
+.state-progress-dot {
+  position: absolute;
+  top: -3px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: travel-dot 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes travel-dot {
+  0% {
+    left: 0%;
+  }
+  55% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.state-bars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 22px;
+}
+.state-bar {
+  flex: 1;
+  height: 22px;
+  border-radius: 1px;
+  background: var(--ok);
+  opacity: 0.75;
+}
+.state-bar-fail {
+  background: var(--server-err);
+  opacity: 1;
+  animation: bar-flicker 3.4s ease-in-out infinite;
+}
+@keyframes bar-flicker {
+  0%,
+  72% {
+    opacity: 1;
+  }
+  76%,
+  84% {
+    opacity: 0.25;
+  }
+  88%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-marquee-track,
+  .state-progress-dot,
+  .state-bar-fail {
+    animation: none;
+  }
+}
+
+/* --- modals ---------------------------------------------------------- */
+
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modal-scrim-in 160ms ease;
+}
+
+.modal-card {
+  width: min(440px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(var(--ink-rgb), 0.28);
+  animation: modal-card-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modal-card h2 {
+  font-size: 18px;
+}
+.modal-card p {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-55);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+@keyframes modal-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-scrim,
+  .modal-card {
+    animation: none;
+  }
+}

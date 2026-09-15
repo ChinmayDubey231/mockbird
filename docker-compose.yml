@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mockbird
+      POSTGRES_PASSWORD: mockbird
+      POSTGRES_DB: mockbird
+    ports: ["5432:5432"]
+    volumes: ["mockbird-pg:/var/lib/postgresql/data"]
+volumes:
+  mockbird-pg:

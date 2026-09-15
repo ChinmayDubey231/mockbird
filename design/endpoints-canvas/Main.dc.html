@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#0e1116;--surface:#16191f;--field:#1c2027;--rule:#2b313a;--rule-soft:#232830;--ink:#e9e5dd;--ink-35:rgba(233,229,221,.38);--ink-45:rgba(233,229,221,.5);--ink-55:rgba(233,229,221,.62);--ink-70:rgba(233,229,221,.8);--tint:rgba(233,229,221,.04);--accent:#93a9f7;--accent-hi:#b6c5ff;--accent-2:#b79bf5;--accent-rgb:147,169,247;--ok:#55c58c;--ok-rgb:85,197,140;--client-err:#e2a85c;--server-err:#f27f73;--code-bg:#090c10;--code-fg:#d9d4ca;--btn-bg:#e9e5dd;--btn-fg:#0e1116;--btn-hi:#ffffff;--scrim:rgba(0,0,0,.52)}
+[data-theme="light"]{--bg:#f1eee9;--surface:#fbfaf8;--field:#ffffff;--rule:#ddd9d2;--rule-soft:#eae6e0;--ink:#12161c;--ink-35:rgba(18,22,28,.38);--ink-45:rgba(18,22,28,.5);--ink-55:rgba(18,22,28,.62);--ink-70:rgba(18,22,28,.8);--tint:rgba(18,22,28,.04);--accent:#3b5bdb;--accent-hi:#2a44b0;--accent-2:#7c4fe0;--accent-rgb:59,91,219;--ok:#1f7a4c;--ok-rgb:31,122,76;--client-err:#b45309;--server-err:#b3261e;--code-bg:#12161c;--code-fg:#e6e1d8;--btn-bg:#12161c;--btn-fg:#fbfaf8;--btn-hi:#000000;--scrim:rgba(18,22,28,.3)}
+html{background:var(--bg)}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.5 "Inter Tight",ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html.theming,html.theming *{transition:background-color .34s ease,border-color .34s ease,color .34s ease,fill .34s ease!important}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hi);text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit;max-width:100%}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=range]{appearance:none;width:100%;height:2px;background:var(--rule);cursor:pointer;border-radius:2px}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border-radius:50%;background:var(--ink);border:0}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--ink);border:0}
+input[type=checkbox]{accent-color:var(--accent)}
+textarea{resize:vertical}
+@keyframes drawerIn{from{transform:translateX(16px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</helmet>
+
+<header style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--rule);padding:11px clamp(12px,2.5vw,20px);position:sticky;top:0;z-index:5">
+  <div style="display:flex;align-items:center;gap:10px;flex:none">
+    <span style="display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--accent);flex:none">
+      <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true" style="display:block">
+        <path d="M3 5.5 L13.5 5.5 L21 12 L13.5 18.5 L3 18.5 L8.5 12 Z" fill="var(--surface)"></path>
+        <circle cx="12.4" cy="10.4" r="1.6" fill="var(--accent)"></circle>
+      </svg>
+    </span>
+    <span style="font:500 14px/1 'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)">Mockbird</span>
+  </div>
+  <span style="color:var(--ink-35);flex:none">/</span>
+  <span style="font-weight:500;flex:none">{{ wsName }}</span>
+  <span style="flex:1;min-width:0"></span>
+  <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <code style="font:400 12px/1.5 'JetBrains Mono',monospace;color:var(--ink-55);flex:none">{{ baseUrl }}</code>
+  </sc-if>
+  <button onClick="{{ copyBase }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:5px 10px;font-size:12.5px;cursor:pointer;white-space:nowrap;flex:none" style-hover="border-color:var(--accent);color:var(--accent)">{{ copyBaseLabel }}</button>
+  <button onClick="{{ toggleTheme }}" role="switch" aria-checked="{{ isLight }}" aria-label="Switch to {{ themeLabel }} theme" title="Switch to {{ themeLabel }}" style="position:relative;flex:none;width:52px;height:26px;padding:0;border:1px solid var(--rule);border-radius:999px;background:var(--field);cursor:pointer;transition:border-color .28s ease,background-color .34s ease" style-hover="border-color:var(--accent)">
+    <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--ink);transform:translateX({{ knobX }});transition:transform .34s cubic-bezier(.4,0,.2,1),background-color .34s ease"></span>
+    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="position:absolute;top:7px;left:7px;opacity:{{ moonOpacity }};transition:opacity .28s ease;pointer-events:none">
+      <path d="M20 14.5A9 9 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="var(--ink-45)"></path>
+    </svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="position:absolute;top:6.5px;right:6.5px;opacity:{{ sunOpacity }};transition:opacity .28s ease;pointer-events:none">
+      <circle cx="12" cy="12" r="4.4" fill="var(--ink-45)"></circle>
+      <g stroke="var(--ink-45)" stroke-width="2" stroke-linecap="round">
+        <path d="M12 1.8v2.6"></path><path d="M12 19.6v2.6"></path>
+        <path d="M1.8 12h2.6"></path><path d="M19.6 12h2.6"></path>
+        <path d="M4.8 4.8l1.9 1.9"></path><path d="M17.3 17.3l1.9 1.9"></path>
+        <path d="M19.2 4.8l-1.9 1.9"></path><path d="M6.7 17.3l-1.9 1.9"></path>
+      </g>
+    </svg>
+  </button>
+</header>
+
+<nav style="display:flex;gap:2px;background:var(--surface);border-bottom:1px solid var(--rule);padding:0 clamp(12px,2.5vw,20px);overflow-x:auto">
+  <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="3">
+    <span style="padding:9px 12px;font-size:13px;color:{{ t.color }};border-bottom:2px solid {{ t.line }};margin-bottom:-1px;cursor:pointer;white-space:nowrap;flex:none">{{ t.name }}</span>
+  </sc-for>
+</nav>
+
+<div style="display:flex;align-items:stretch;min-height:calc(100vh - 90px);flex-wrap:wrap">
+
+  <aside style="flex:1 1 264px;max-width:{{ railMax }};min-width:min(100%,244px);border-right:1px solid var(--rule);background:var(--surface);padding:14px 13px;display:flex;flex-direction:column;gap:14px">
+    <button onClick="{{ openDrawer }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--btn-bg);border:1px solid var(--btn-bg);color:var(--btn-fg);border-radius:4px;padding:9px 12px;font-weight:500;cursor:pointer" style-hover="background:var(--btn-hi);border-color:var(--btn-hi)">
+      <span style="font:400 15px/1 'JetBrains Mono',monospace;flex:none">+</span>New endpoint
+    </button>
+
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+        <div onClick="{{ r.select }}" style="display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:4px;cursor:pointer;background:{{ r.bg }};box-shadow:inset 2px 0 0 {{ r.edge }};opacity:{{ r.dim }}" style-hover="background:var(--tint)">
+          <span style="width:6px;height:6px;border-radius:50%;background:{{ r.dot }};flex:none"></span>
+          <code style="font:500 10.5px/1 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--ink-55);flex:none;width:30px">{{ r.method }}</code>
+          <code style="font:400 12.5px/1.3 'JetBrains Mono',monospace;color:{{ r.color }};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.path }}</code>
+          <code style="font:400 12px/1 'JetBrains Mono',monospace;color:var(--ink-45);flex:none">{{ r.spec }}</code>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="border-top:1px solid var(--rule);padding-top:13px;display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:12.5px;color:var(--ink-55);text-wrap:pretty">{{ hitsLine }}</span>
+      <a href="#log" style="font-size:12.5px">View log</a>
+    </div>
+  </aside>
+
+  <main style="flex:100 1 520px;min-width:0;padding:clamp(14px,2.4vw,20px) clamp(12px,2.5vw,24px) 52px">
+    <div style="max-width:940px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0;font:500 16px/1.4 'JetBrains Mono',monospace;overflow-wrap:anywhere;min-width:0">{{ curTitle }}</h2>
+        <span style="font-size:12.5px;color:var(--ink-45);white-space:nowrap;flex:none">specificity {{ curSpec }}</span>
+        <span style="flex:1;min-width:0"></span>
+        <span aria-live="polite" style="font-size:12.5px;color:{{ saveColor }};flex:none">{{ saveLabel }}</span>
+        <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;white-space:nowrap;flex:none">
+          Active
+          <button onClick="{{ toggleActive }}" role="switch" aria-checked="{{ isActive }}" aria-label="{{ activeLabel }}" title="{{ activeLabel }}" style="position:relative;flex:none;width:38px;height:20px;padding:0;border:1px solid var(--rule);border-radius:999px;background:var(--field);cursor:pointer;transition:border-color .28s ease,background-color .34s ease" style-hover="border-color:var(--accent)">
+            <span style="position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:var(--ink);transform:translateX({{ activeKnobX }});transition:transform .34s cubic-bezier(.4,0,.2,1),background-color .34s ease"></span>
+          </button>
+        </span>
+      </div>
+
+      <sc-if value="{{ hasMessage }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;font-size:12.5px;color:var(--server-err)">{{ message }}</p>
+      </sc-if>
+
+      <div style="background:var(--surface);border:1px solid var(--rule);border-radius:4px">
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--rule)">
+          <span style="font-size:12.5px;color:var(--ink-45)">URL</span>
+          <span style="flex:1;min-width:0"></span>
+          <button onClick="{{ copyUrl }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;flex:none;white-space:nowrap" style-hover="border-color:var(--accent);color:var(--accent)">{{ copyUrlLabel }}</button>
+          <button onClick="{{ copyCurl }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;flex:none;white-space:nowrap" style-hover="border-color:var(--accent);color:var(--accent)">{{ copyCurlLabel }}</button>
+        </div>
+        <code style="display:block;padding:11px 13px;font:400 13px/1.45 'JetBrains Mono',monospace;overflow-wrap:anywhere">{{ curUrl }}</code>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--rule);border-radius:4px">
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--rule)">
+          <span style="font-size:12.5px;color:var(--ink-45)">Response body</span>
+          <span style="flex:1;min-width:0"></span>
+          <button onClick="{{ format }}" disabled="{{ jsonInvalid }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;flex:none;white-space:nowrap" style-hover="border-color:var(--accent);color:var(--accent)">Format</button>
+        </div>
+        <textarea value="{{ bodyText }}" onChange="{{ editBody }}" spellcheck="false" aria-label="Response body" style="width:100%;height:268px;background:var(--code-bg);color:var(--code-fg);border:0;padding:13px 15px;font:400 12.5px/1.68 'JetBrains Mono',monospace"></textarea>
+        <div style="padding:9px 13px;border-top:1px solid var(--rule);font-size:12.5px;color:{{ jsonColor }};overflow-wrap:anywhere">{{ jsonHint }}</div>
+      </div>
+
+      <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <div>
+          <span style="display:block;margin-bottom:6px;font-size:12.5px;color:var(--ink-45)">Status</span>
+          <select value="{{ statusCode }}" onChange="{{ setStatus }}" aria-label="Status code" style="width:100%;background:var(--field);border:1px solid var(--rule);border-radius:4px;padding:7px 9px;font:400 13px/1.4 'JetBrains Mono',monospace;color:{{ statusColor }};cursor:pointer">
+            <sc-for list="{{ statusOptions }}" as="o" hint-placeholder-count="8">
+              <option value="{{ o.code }}">{{ o.code }}</option>
+            </sc-for>
+          </select>
+        </div>
+
+        <div>
+          <span style="display:block;margin-bottom:6px;font-size:12.5px;color:var(--ink-45)">Delay <code style="font:400 12.5px/1 'JetBrains Mono',monospace;color:var(--ink-70)">{{ delayLabel }}</code></span>
+          <input type="range" min="0" max="8000" step="100" value="{{ delayMs }}" onChange="{{ setDelay }}" aria-label="Delay">
+          <p style="margin:6px 0 0;font-size:12.5px;color:var(--ink-45)">Capped at 8s by the serverless function timeout.</p>
+        </div>
+
+        <div>
+          <span style="display:block;margin-bottom:6px;font-size:12.5px;color:var(--ink-45)">Failure <code style="font:400 12.5px/1 'JetBrains Mono',monospace;color:{{ failColor }}">{{ failLabel }}</code></span>
+          <input type="range" min="0" max="100" step="5" value="{{ failureRate }}" onChange="{{ setFail }}" aria-label="Failure rate">
+          <select value="{{ failureStatus }}" onChange="{{ setFailStatus }}" aria-label="Failure status code" style="margin-top:8px;width:100%;background:var(--field);border:1px solid var(--rule);border-radius:4px;padding:7px 9px;font:400 13px/1.4 'JetBrains Mono',monospace;color:{{ failStatusColor }};cursor:pointer">
+            <sc-for list="{{ errorOptions }}" as="o" hint-placeholder-count="6">
+              <option value="{{ o.code }}">{{ o.code }}</option>
+            </sc-for>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:4px">
+        <button onClick="{{ sendTest }}" style="background:var(--btn-bg);border:1px solid var(--btn-bg);color:var(--btn-fg);border-radius:4px;padding:8px 14px;font-weight:500;cursor:pointer;white-space:nowrap;flex:none" style-hover="background:var(--btn-hi);border-color:var(--btn-hi)">Send test request</button>
+        <span style="flex:1;min-width:0"></span>
+        <button onClick="{{ del }}" style="border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:8px 14px;cursor:pointer;color:var(--ink-55);white-space:nowrap;flex:none" style-hover="border-color:var(--server-err);color:var(--server-err)">Delete endpoint</button>
+      </div>
+
+      <sc-if value="{{ hasTest }}" hint-placeholder-val="{{ false }}">
+        <pre style="margin:0;background:var(--code-bg);color:var(--code-fg);border:1px solid var(--rule);border-radius:4px;font:400 12.5px/1.68 'JetBrains Mono',monospace;padding:13px 15px;overflow:auto;max-height:240px;white-space:pre-wrap;overflow-wrap:anywhere">{{ testText }}</pre>
+      </sc-if>
+    </div>
+  </main>
+</div>
+
+<sc-if value="{{ drawer }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:var(--scrim);z-index:8;animation:scrimIn .2s ease-out both"></div>
+  <aside role="dialog" aria-label="Create endpoint" style="position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:9;background:var(--surface);border-left:1px solid var(--rule);display:flex;flex-direction:column;animation:drawerIn .24s cubic-bezier(.4,0,.2,1) both;box-shadow:-24px 0 48px -28px rgba(0,0,0,.6)">
+
+    <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--rule);flex:none">
+      <h2 style="margin:0;font:600 16px/1.3 'Inter Tight',sans-serif;letter-spacing:-.01em">New endpoint</h2>
+      <span style="flex:1;min-width:0"></span>
+      <button onClick="{{ closeDrawer }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--ink-55);flex:none" style-hover="border-color:var(--accent);color:var(--accent)">Close</button>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:18px">
+
+      <div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select value="{{ dMethod }}" onChange="{{ setDMethod }}" aria-label="Method" style="flex:0 1 110px;background:var(--field);border:1px solid var(--rule);border-radius:4px;padding:7px 9px;font:400 13px/1.4 'JetBrains Mono',monospace;cursor:pointer">
+            <sc-for list="{{ methods }}" as="m" hint-placeholder-count="5">
+              <option value="{{ m.name }}">{{ m.name }}</option>
+            </sc-for>
+          </select>
+          <input value="{{ dPath }}" onChange="{{ setDPath }}" placeholder="/orders/:id" aria-label="Path" style="flex:1 1 190px;min-width:0;background:var(--field);border:1px solid var(--rule);border-radius:4px;padding:7px 9px;font:400 13px/1.4 'JetBrains Mono',monospace" style-focus="border-color:var(--accent)">
+        </div>
+        <p style="margin:7px 0 0;font-size:12.5px;color:var(--ink-45);text-wrap:pretty">Use <code style="font:400 12.5px/1 'JetBrains Mono',monospace;color:var(--ink-55)">:name</code> for a path parameter and a trailing <code style="font:400 12.5px/1 'JetBrains Mono',monospace;color:var(--ink-55)">*</code> to match any depth below.</p>
+      </div>
+
+      <div>
+        <div style="display:flex;gap:2px;border-bottom:1px solid var(--rule)">
+          <sc-for list="{{ dTabs }}" as="t" hint-placeholder-count="2">
+            <span onClick="{{ t.pick }}" style="padding:7px 10px;font-size:13px;color:{{ t.color }};border-bottom:2px solid {{ t.line }};margin-bottom:-1px;cursor:pointer;white-space:nowrap;flex:none">{{ t.name }}</span>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ dDescribing }}" hint-placeholder-val="{{ true }}">
+          <div style="padding-top:14px">
+            <textarea value="{{ dDesc }}" onChange="{{ setDDesc }}" maxlength="500" placeholder="a single order with id, customer name, total in rupees, status, and an array of line items" aria-label="Description" style="width:100%;height:78px;background:var(--field);border:1px solid var(--rule);border-radius:4px;padding:9px 11px;font:400 13px/1.5 'Inter Tight',sans-serif" style-focus="border-color:var(--accent)"></textarea>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+              <span style="font-size:12.5px;color:var(--ink-45);flex:none">{{ dCount }}</span>
+              <span style="flex:1;min-width:0"></span>
+              <button onClick="{{ generate }}" disabled="{{ genDisabled }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:7px 13px;font-size:13px;cursor:pointer;flex:none;white-space:nowrap" style-hover="border-color:var(--accent);color:var(--accent)">{{ genLabel }}</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dWriting }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:14px 0 0;font-size:12.5px;color:var(--ink-45)">Write the JSON below. Nothing is generated and no model runs.</p>
+        </sc-if>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12.5px;color:var(--ink-45)">{{ dBodyLabel }}</span>
+          <span style="flex:1;min-width:0"></span>
+          <button onClick="{{ dFormat }}" disabled="{{ dJsonInvalid }}" style="border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;flex:none;white-space:nowrap" style-hover="border-color:var(--accent);color:var(--accent)">Format</button>
+        </div>
+        <textarea value="{{ dBody }}" onChange="{{ setDBody }}" spellcheck="false" aria-label="Response body" style="width:100%;height:206px;background:var(--code-bg);color:var(--code-fg);border:1px solid var(--rule);border-radius:4px;padding:13px 15px;font:400 12.5px/1.68 'JetBrains Mono',monospace"></textarea>
+        <sc-if value="{{ dJsonInvalid }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:6px 0 0;font-size:12.5px;color:var(--client-err)">This isn't valid JSON yet.</p>
+        </sc-if>
+        <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:6px 0 0;font-size:12.5px;color:var(--ink-45);text-wrap:pretty">{{ dNote }}</p>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ hasDError }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;font-size:12.5px;color:var(--server-err)">{{ dError }}</p>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-top:1px solid var(--rule);flex:none">
+      <code style="flex:1;min-width:0;font:400 12.5px/1.4 'JetBrains Mono',monospace;color:var(--ink-45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ dFooterNote }}</code>
+      <button onClick="{{ createEndpoint }}" disabled="{{ createDisabled }}" style="background:var(--btn-bg);border:1px solid var(--btn-bg);color:var(--btn-fg);border-radius:4px;padding:8px 14px;font-weight:500;cursor:pointer;flex:none;white-space:nowrap" style-hover="background:var(--btn-hi);border-color:var(--btn-hi)">{{ createLabel }}</button>
+    </div>
+  </aside>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280}}">
+const NAMES = ['Rohan Mehta', 'Ananya Iyer', 'Kabir Nair', 'Meera Menon', 'Arjun Rao'];
+const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+const STATUS_OPTIONS = [200, 201, 202, 204, 301, 400, 401, 403, 404, 409, 422, 429, 500, 502, 503];
+const FAILURE_STATUS = [400, 401, 403, 404, 429, 500, 502, 503];
+const rid = () => Math.random().toString(36).slice(2, 6);
+
+// components/status.ts
+const statusColor = (c) => (c >= 500 ? 'var(--server-err)' : c >= 400 ? 'var(--client-err)' : 'var(--ok)');
+
+// Dashboard.tsx jsonError()
+function jsonError(text) {
+  try { JSON.parse(text); return null; }
+  catch (err) { return err instanceof Error ? err.message.replace(/^JSON.parse: /, '') : 'Invalid JSON'; }
+}
+// lib/path.ts specificity
+function specificity(path) {
+  const segs = path.split('/').filter(Boolean);
+  const stat = segs.filter(s => s !== '*' && s[0] !== ':').length;
+  const param = segs.filter(s => s[0] === ':').length;
+  return stat * 100 - param * 10 - (segs.indexOf('*') > -1 ? 50 : 0);
+}
+const record = (i) => ({
+  id: 'ord_' + rid(), name: NAMES[i % NAMES.length],
+  amount: [4820, 1290, 7340][i % 3], status: ['active', 'pending', 'active'][i % 3],
+  createdAt: '{{now}}'
+});
+
+class Component extends DCLogic {
+  state = {
+    theme: 'dark', narrow: false,
+    wsName: 'Demo workspace', wsKey: '7jhdqd',
+    endpoints: [{ id: 'e1', method: 'GET', path: '/orders', statusCode: 200, delayMs: 0, failureRate: 0, failureStatus: 500, isActive: true }],
+    bodies: { e1: JSON.stringify([record(0), record(1), record(2)], null, 2) },
+    selected: 'e1', save: 'saved', test: null, copied: '', message: null, hits24: 1,
+    drawer: false, dMethod: 'GET', dPath: '/orders', dTab: 'describe', dDesc: '', dBody: '{\n  \n}',
+    generating: false, generated: false, saving: false, dNote: null, dError: null
+  };
+
+  componentDidMount() {
+    this.onResize = () => this.setState({ narrow: window.innerWidth < 900 });
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+    this.onKeyDown = (e) => { if (e.key === 'Escape' && this.state.drawer) this.closeDrawer(); };
+    window.addEventListener('keydown', this.onKeyDown);
+    let saved = null;
+    try { saved = localStorage.getItem('mockbird.theme'); } catch (e) {}
+    this.applyTheme(saved === 'light' ? 'light' : 'dark', false);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKeyDown);
+    clearTimeout(this.saveTimer);
+    clearTimeout(this.genTimer);
+    clearTimeout(this.createTimer);
+  }
+
+  applyTheme(theme, animate) {
+    const root = document.documentElement;
+    if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.classList.add('theming');
+      clearTimeout(this.themeTimer);
+      this.themeTimer = setTimeout(() => root.classList.remove('theming'), 420);
+    }
+    root.dataset.theme = theme;
+    this.setState({ theme });
+    try { localStorage.setItem('mockbird.theme', theme); } catch (e) {}
+  }
+  toggleTheme = () => this.applyTheme(this.state.theme === 'dark' ? 'light' : 'dark', true);
+
+  cur() { return this.state.endpoints.find(e => e.id === this.state.selected) || this.state.endpoints[0] || null; }
+  ordered() { return [...this.state.endpoints].sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method)); }
+
+  flagSave() {
+    clearTimeout(this.saveTimer);
+    this.setState({ save: 'saving' });
+    this.saveTimer = setTimeout(() => this.setState({ save: 'saved' }), 430);
+  }
+  patch(field, value) {
+    const id = this.state.selected;
+    this.setState(s => ({ endpoints: s.endpoints.map(e => (e.id === id ? { ...e, [field]: value } : e)) }));
+    this.flagSave();
+  }
+  flash(key) {
+    this.setState({ copied: key });
+    setTimeout(() => this.setState({ copied: '' }), 1400);
+  }
+
+  openDrawer = () => this.setState({
+    drawer: true, dTab: 'describe', dDesc: '', dBody: '{\n  \n}', dPath: '/orders',
+    dMethod: 'GET', generated: false, generating: false, saving: false, dNote: null, dError: null
+  });
+  closeDrawer = () => this.setState({ drawer: false, generating: false, saving: false });
+
+  generate = () => {
+    const s = this.state;
+    if (!s.dDesc.trim() || s.generating) return;
+    this.setState({ generating: true, dError: null });
+    clearTimeout(this.genTimer);
+    this.genTimer = setTimeout(() => {
+      const low = s.dDesc.toLowerCase();
+      const single = low.indexOf('single') > -1 || low.indexOf('a single') > -1 || s.dPath.indexOf(':') > -1;
+      const base = { id: s.dPath.indexOf(':') > -1 ? '{{id}}' : 'ord_' + rid(), customer: NAMES[0], total: 4820, status: 'shipped' };
+      if (low.indexOf('item') > -1) base.lineItems = [{ sku: 'KTL-01', qty: 1, price: 3200 }, { sku: 'TOT-04', qty: 2, price: 810 }];
+      base.createdAt = '{{now}}';
+      const out = single ? base : [base, { ...base, id: 'ord_' + rid(), customer: NAMES[1], total: 1290, status: 'pending' }];
+      this.setState({
+        dBody: JSON.stringify(out, null, 2),
+        generated: true, generating: false,
+        dNote: 'Schema and sample records generated once, now. Requests to this endpoint read them back verbatim.'
+      });
+    }, 620);
+  };
+
+  createEndpoint = () => {
+    const s = this.state;
+    if (jsonError(s.dBody) || !s.dPath.trim() || s.saving) return;
+    const path = s.dPath.trim();
+    // api/workspaces/[id]/endpoints POST → 409 on the unique (method, path) violation
+    if (s.endpoints.some(e => e.method === s.dMethod && e.path === path)) {
+      this.setState({ dError: 'That method and path already exist in this workspace' });
+      return;
+    }
+    this.setState({ saving: true, dError: null });
+    clearTimeout(this.createTimer);
+    this.createTimer = setTimeout(() => {
+      const ep = {
+        id: 'e' + Date.now(), method: s.dMethod, path,
+        description: s.dDesc.trim() || null,
+        statusCode: s.dMethod === 'POST' ? 201 : 200,
+        delayMs: 0, failureRate: 0, failureStatus: 500, isActive: true
+      };
+      this.setState(st => ({
+        endpoints: [...st.endpoints, ep],
+        bodies: { ...st.bodies, [ep.id]: st.dBody },
+        selected: ep.id, drawer: false, saving: false, test: null, message: null, save: 'saved'
+      }));
+    }, 380);
+  };
+
+  sendTest = () => {
+    const ep = this.cur();
+    if (!ep) return;
+    const failed = Math.random() * 100 < ep.failureRate;
+    const status = failed ? ep.failureStatus : ep.statusCode;
+    const ms = Math.round(ep.delayMs + 18 + Math.random() * 80);
+    const raw = this.state.bodies[ep.id] || '{}';
+    const body = failed
+      ? JSON.stringify({ error: 'Injected failure', rate: ep.failureRate + '%' }, null, 2)
+      : raw.replace(/\{\{id\}\}/g, 'ord_' + rid())
+           .replace(/\{\{now\}\}/g, new Date().toISOString())
+           .replace(/\{\{index\}\}/g, '0');
+    this.setState(st => ({
+      test: status + ' · ' + ms + 'ms\n\n' + body,
+      hits24: st.hits24 + 1
+    }));
+  };
+
+  renderVals() {
+    const s = this.state, ep = this.cur();
+    const bodyText = ep ? (s.bodies[ep.id] || '') : '';
+    const bodyErr = jsonError(bodyText);
+    const dBodyErr = jsonError(s.dBody);
+
+    return {
+      wide: !s.narrow,
+      railMax: s.narrow ? 'none' : '290px',
+      isLight: s.theme === 'light',
+      themeLabel: s.theme === 'dark' ? 'Light' : 'Dark',
+      toggleTheme: this.toggleTheme,
+      knobX: s.theme === 'light' ? '26px' : '0px',
+      moonOpacity: s.theme === 'light' ? '1' : '0',
+      sunOpacity: s.theme === 'light' ? '0' : '1',
+      wsName: s.wsName,
+      baseUrl: 'http://localhost:3000/m/' + s.wsKey,
+      copyBase: () => this.flash('base'),
+      copyBaseLabel: s.copied === 'base' ? 'Copied' : 'Copy base URL',
+      navTabs: [
+        { name: 'Endpoints', on: true }, { name: 'Request log', on: false }, { name: 'Settings', on: false }
+      ].map(t => ({ name: t.name, color: t.on ? 'var(--ink)' : 'var(--ink-55)', line: t.on ? 'var(--accent)' : 'transparent' })),
+
+      openDrawer: this.openDrawer,
+      rows: this.ordered().map(e => ({
+        method: e.method, path: e.path, spec: specificity(e.path),
+        select: () => this.setState({ selected: e.id, test: null, save: '', message: null }),
+        dot: e.isActive ? statusColor(e.statusCode) : 'var(--ink-35)',
+        bg: e.id === s.selected ? 'var(--tint)' : 'transparent',
+        edge: e.id === s.selected ? 'var(--accent)' : 'transparent',
+        color: e.id === s.selected ? 'var(--ink)' : 'var(--ink-55)',
+        dim: e.isActive ? '1' : '.55'
+      })),
+      hitsLine: s.hits24 === 1
+        ? '1 request in the last 24 hours'
+        : s.hits24.toLocaleString('en-IN') + ' requests in the last 24 hours',
+
+      curTitle: ep ? ep.method + ' ' + ep.path : '',
+      curSpec: ep ? specificity(ep.path) : '',
+      curUrl: ep ? 'http://localhost:3000/m/' + s.wsKey + ep.path : '',
+      copyUrl: () => this.flash('url'),
+      copyUrlLabel: s.copied === 'url' ? 'Copied' : 'Copy',
+      copyCurl: () => this.flash('curl'),
+      copyCurlLabel: s.copied === 'curl' ? 'Copied' : 'Copy curl',
+      saveLabel: s.save === 'saving' ? 'Saving…' : s.save === 'saved' ? 'Saved' : '',
+      saveColor: s.save === 'saved' ? 'var(--ok)' : 'var(--ink-45)',
+      isActive: !!(ep && ep.isActive),
+      activeKnobX: (ep && ep.isActive) ? '20px' : '0px',
+      activeLabel: (ep && ep.isActive) ? 'Deactivate endpoint' : 'Activate endpoint',
+      toggleActive: () => { if (ep) this.patch('isActive', !ep.isActive); },
+      hasMessage: !!s.message,
+      message: s.message || '',
+
+      bodyText,
+      editBody: (e) => { const v = e.target.value; this.setState(st => ({ bodies: { ...st.bodies, [st.selected]: v } })); this.flagSave(); },
+      jsonInvalid: !!bodyErr,
+      jsonColor: bodyErr ? 'var(--client-err)' : 'var(--ink-45)',
+      jsonHint: bodyErr
+        ? bodyErr + ' — nothing is saved until this parses.'
+        : '{{id}} is replaced with the matched path param. {{query.page}}, {{now}} and {{index}} work too.',
+      format: () => {
+        if (bodyErr) return;
+        const out = JSON.stringify(JSON.parse(bodyText), null, 2);
+        this.setState(st => ({ bodies: { ...st.bodies, [st.selected]: out } }));
+        this.flagSave();
+      },
+
+      statusCode: ep ? ep.statusCode : 200,
+      statusColor: statusColor(ep ? ep.statusCode : 200),
+      statusOptions: STATUS_OPTIONS.map(code => ({ code })),
+      setStatus: (e) => this.patch('statusCode', +e.target.value),
+      delayMs: ep ? ep.delayMs : 0,
+      delayLabel: ep ? (ep.delayMs / 1000).toFixed(1) + 's' : '0.0s',
+      setDelay: (e) => this.patch('delayMs', +e.target.value),
+      failureRate: ep ? ep.failureRate : 0,
+      failLabel: (ep ? ep.failureRate : 0) + '% → ' + (ep ? ep.failureStatus : 500),
+      failColor: ep && ep.failureRate === 0 ? 'var(--ink-55)' : statusColor(ep ? ep.failureStatus : 500),
+      setFail: (e) => this.patch('failureRate', +e.target.value),
+      failureStatus: ep ? ep.failureStatus : 500,
+      failStatusColor: statusColor(ep ? ep.failureStatus : 500),
+      errorOptions: FAILURE_STATUS.map(code => ({ code })),
+      setFailStatus: (e) => this.patch('failureStatus', +e.target.value),
+
+      sendTest: this.sendTest,
+      hasTest: !!s.test,
+      testText: s.test || '',
+      del: () => {
+        if (!ep || !window.confirm('Delete ' + ep.method + ' ' + ep.path + '?')) return;
+        this.setState(st => {
+          const left = st.endpoints.filter(e => e.id !== ep.id);
+          return { endpoints: left, selected: left.length ? left[0].id : null, test: null };
+        });
+      },
+
+      drawer: s.drawer,
+      closeDrawer: this.closeDrawer,
+      methods: METHODS.map(name => ({ name })),
+      dMethod: s.dMethod,
+      setDMethod: (e) => this.setState({ dMethod: e.target.value, dError: null }),
+      dPath: s.dPath,
+      setDPath: (e) => this.setState({ dPath: e.target.value, dError: null }),
+      dTabs: [{ name: 'Describe it', key: 'describe' }, { name: 'Write it', key: 'write' }].map(t => ({
+        name: t.name,
+        pick: () => this.setState({ dTab: t.key }),
+        color: s.dTab === t.key ? 'var(--ink)' : 'var(--ink-55)',
+        line: s.dTab === t.key ? 'var(--accent)' : 'transparent'
+      })),
+      dDescribing: s.dTab === 'describe',
+      dWriting: s.dTab === 'write',
+      dDesc: s.dDesc,
+      setDDesc: (e) => this.setState({ dDesc: e.target.value.slice(0, 500) }),
+      dCount: s.dDesc.length + '/500',
+      generate: this.generate,
+      genDisabled: s.generating || !s.dDesc.trim(),
+      genLabel: s.generating ? 'Generating…' : s.generated ? 'Regenerate' : 'Generate',
+      dBody: s.dBody,
+      setDBody: (e) => this.setState({ dBody: e.target.value }),
+      dBodyLabel: s.dTab === 'describe' && s.generated ? 'Preview — edit anything before saving' : 'Response body',
+      dJsonInvalid: !!dBodyErr,
+      dFormat: () => {
+        if (dBodyErr) return;
+        this.setState({ dBody: JSON.stringify(JSON.parse(s.dBody), null, 2) });
+      },
+      hasNote: !!s.dNote && !dBodyErr,
+      dNote: s.dNote || '',
+      hasDError: !!s.dError,
+      dError: s.dError || '',
+      createEndpoint: this.createEndpoint,
+      createDisabled: s.saving || !!dBodyErr || !s.dPath.trim(),
+      createLabel: s.saving ? 'Creating…' : 'Create endpoint',
+      dFooterNote: s.dPath.trim() ? s.dMethod + ' ' + s.dPath.trim() : ''
+    };
+  }
+}
+</script>
+</body>
+</html>
