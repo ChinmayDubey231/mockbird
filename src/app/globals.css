@@ -213,6 +213,22 @@ h3 {
     padding: 6px;
     border-radius: 8px;
   }
+  /*
+   * At this width .hide-mobile has already dropped "How it works" and
+   * "Start free" — but the logo wordmark, "My workspaces" and the theme
+   * switch alone still don't fit in one row under ~380px, so the switch
+   * wraps onto its own line. Tightening padding/gap and the wordmark's
+   * letter-spacing (its biggest single cost at this size) claws back
+   * enough width to keep everything on one row down to ~340px.
+   */
+  .topbar {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .wordmark {
+    font-size: 15px;
+    letter-spacing: 0.08em;
+  }
 }
 
 /* --- controls ------------------------------------------------------------ */
