@@ -1,5 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <rect width="24" height="24" rx="6" fill="#3b5bdb" />
-  <path d="M3 5.5 L13.5 5.5 L21 12 L13.5 18.5 L3 18.5 L8.5 12 Z" fill="#fbfaf8" />
-  <path d="M10.6 12 L15 9.4 L15 14.6 Z" fill="#3b5bdb" />
+  <!-- The header's mark: the bird knocked out of an ink square, with a cyan
+       eye. A dark browser gets the night edition's, so it holds up on a dark
+       tab strip. The bird is drawn larger than in the header, to read at 16px. -->
+  <style>
+    .square { fill: #201e1d; }
+    .bird { fill: #f3f2f2; }
+    .eye { fill: #0088b0; }
+    @media (prefers-color-scheme: dark) {
+      .square { fill: #f3f2f2; }
+      .bird { fill: #201e1d; }
+      .eye { fill: #38a6cf; }
+    }
+  </style>
+  <rect class="square" width="24" height="24" rx="1.2" />
+  <g transform="translate(12 12) scale(0.82) translate(-12 -12)">
+    <path class="bird" d="M3 5.5 L13.5 5.5 L21 12 L13.5 18.5 L3 18.5 L8.5 12 Z" />
+    <path class="eye" d="M10.6 12 L15 9.4 L15 14.6 Z" />
+  </g>
 </svg>

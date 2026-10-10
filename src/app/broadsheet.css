@@ -1,0 +1,1450 @@
+/* ---------------------------------------------------------------------------
+   The Broadsheet design system: its tokens, its shared pieces (buttons,
+   inputs, the header and masthead, the footer) and the landing page's
+   sections.
+
+   The root layout imports this for every page. The landing page and the
+   workspace both sit inside a .bs-page, and every class here is prefixed bs-.
+   The workspace's own additions live in globals.css as ws-. The light values
+   are the "day edition", dark the "night".
+   --------------------------------------------------------------------------- */
+
+:root {
+  --color-bg: #f5f2ec;
+  --color-surface: #fcfbf8;
+  --color-text: #1c1a19;
+  --color-accent: #1f9bcb;
+  --color-accent-2: #e0337a;
+  --color-divider: color-mix(in srgb, #1c1a19 14%, transparent);
+
+  --color-neutral-100: #efebe5;
+  --color-neutral-200: #e3ded6;
+  --color-neutral-300: #d0cac1;
+  --color-neutral-400: #b3aca2;
+  --color-neutral-500: #948d84;
+  --color-neutral-600: #736d66;
+  --color-neutral-700: #5a5550;
+  --color-neutral-800: #403c39;
+  --color-neutral-900: #292624;
+
+  --color-accent-100: #e2f3fa;
+  --color-accent-200: #c0e5f4;
+  --color-accent-300: #8dd0ea;
+  --color-accent-400: #4fb5dc;
+  --color-accent-500: #1f9bcb;
+  --color-accent-600: #0f80aa;
+  --color-accent-700: #0a6587;
+  --color-accent-800: #0b4c66;
+  --color-accent-900: #0a3446;
+
+  --color-accent-2-100: #fce5ee;
+  --color-accent-2-200: #f9c5d9;
+  --color-accent-2-300: #f390b4;
+  --color-accent-2-400: #ea5a90;
+  --color-accent-2-500: #e0337a;
+  --color-accent-2-600: #bf1f62;
+  --color-accent-2-700: #9b164f;
+  --color-accent-2-800: #77113d;
+  --color-accent-2-900: #510c2a;
+
+  /* The third process ink: highlights and routing. */
+  --color-accent-3: #f5c400;
+  --color-accent-3-100: #fff7d1;
+  --color-accent-3-200: #ffeda3;
+  --color-accent-3-300: #ffe066;
+  --color-accent-3-400: #ffd43b;
+  --color-accent-3-500: #f5c400;
+  --color-accent-3-600: #d4a300;
+  --color-accent-3-700: #a67c00;
+  --color-accent-3-800: #7a5a00;
+  --color-accent-3-900: #4d3800;
+
+  /* Success — cyan overprinted with yellow. */
+  --color-ok: #2e9e5b;
+  --color-ok-100: #e1f3e8;
+  --color-ok-200: #c2e6cf;
+  --color-ok-700: #1d6e3f;
+
+  /* Calls to action print in cyan; ink is for reading. */
+  --color-primary: #0d7aa3;
+  --color-primary-hover: #0a6587;
+  --color-on-primary: #ffffff;
+
+  --code-key: #0b4c66;
+  --code-string: #1d6e3f;
+  --code-number: #b4500a;
+  --code-literal: #bf1f62;
+  --code-punct: #8a837b;
+
+  --shadow-sm: 0 0 0 1px color-mix(in srgb, #1c1a19 9%, transparent);
+  --shadow-md: 0 0 0 1px color-mix(in srgb, #1c1a19 9%, transparent),
+    0 4px 14px color-mix(in srgb, #1c1a19 8%, transparent);
+  --shadow-lg: 0 0 0 1px color-mix(in srgb, #1c1a19 9%, transparent),
+    0 14px 36px color-mix(in srgb, #1c1a19 12%, transparent);
+
+  /* Process inks for the misregistered headline. Multiplied on paper. */
+  --plate-c: #00aeef;
+  --plate-m: #ec008c;
+  --plate-y: #ffe600;
+  --plate-k: #1c1a19;
+  --plate-blend: multiply;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  /* next/font sets the real families on .bs-page; these are the fallbacks. */
+  --font-heading: Georgia, "Times New Roman", serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Page-level surfaces. Kept out of the palette block below so a
+     .bs-inverse section doesn't swap its own background for the night one. */
+  --band-yellow: #ffe68a;
+  --band-teal: #0b5470;
+  --code-bg: #1c1a19;
+  --numeral-key: #1c1a19;
+}
+
+[data-theme="dark"] {
+  --band-yellow: #3a3110;
+  --band-teal: #0b3a4e;
+  --code-bg: #151413;
+  --numeral-key: #0b0a0a;
+}
+
+/*
+ * The night palette. It also applies to any .bs-inverse element — the code
+ * card, the call-to-action band and the footer — so their buttons, controls
+ * and text pick up dark-surface colours without a second set of rules.
+ */
+[data-theme="dark"],
+.bs-inverse {
+  --color-bg: #201e1d;
+  --color-surface: #2d2b2b;
+  --color-text: #f3f2f2;
+  --color-accent: #38a6cf;
+  --color-accent-2: #ff458e;
+  --color-divider: color-mix(in srgb, #f3f2f2 18%, transparent);
+
+  --color-neutral-100: #2d2b2b;
+  --color-neutral-200: #444141;
+  --color-neutral-300: #605d5d;
+  --color-neutral-400: #7d7979;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #bab6b6;
+  --color-neutral-700: #d7d3d3;
+  --color-neutral-800: #eae7e7;
+  --color-neutral-900: #f8f4f4;
+
+  --color-accent-100: #0a303e;
+  --color-accent-200: #004961;
+  --color-accent-300: #006786;
+  --color-accent-400: #1186ac;
+  --color-accent-500: #38a6cf;
+  --color-accent-600: #62c5ee;
+  --color-accent-700: #99e0ff;
+  --color-accent-800: #cbeeff;
+  --color-accent-900: #e9f8ff;
+
+  --color-accent-2-100: #4b1528;
+  --color-accent-2-200: #790e3d;
+  --color-accent-2-300: #aa0b56;
+  --color-accent-2-400: #d82071;
+  --color-accent-2-500: #ff458e;
+  --color-accent-2-600: #ff90b1;
+  --color-accent-2-700: #ffc0d0;
+  --color-accent-2-800: #ffdee6;
+  --color-accent-2-900: #fff1f4;
+
+  --color-accent-3: #ffd23f;
+  --color-accent-3-100: #2f2706;
+  --color-accent-3-200: #4a3d07;
+  --color-accent-3-300: #6b5808;
+  --color-accent-3-400: #a38709;
+  --color-accent-3-500: #ffd23f;
+  --color-accent-3-600: #ffdc66;
+  --color-accent-3-700: #ffe58f;
+  --color-accent-3-800: #fff0c2;
+  --color-accent-3-900: #fff8e5;
+
+  --color-ok: #55c58c;
+  --color-ok-100: #12301f;
+  --color-ok-200: #1d4a31;
+  --color-ok-700: #a6e8c3;
+
+  --color-primary: #38a6cf;
+  --color-primary-hover: #62c5ee;
+  --color-on-primary: #0f1a1f;
+
+  --code-key: #99e0ff;
+  --code-string: #8fdcae;
+  --code-number: #ffb27a;
+  --code-literal: #ff90b1;
+  --code-punct: #8f8a85;
+
+  --shadow-sm: 0 0 0 1px color-mix(in srgb, #f3f2f2 8%, transparent);
+  --shadow-md: 0 0 0 1px color-mix(in srgb, #f3f2f2 10%, transparent),
+    0 4px 14px color-mix(in srgb, black 40%, transparent);
+  --shadow-lg: 0 0 0 1px color-mix(in srgb, #f3f2f2 10%, transparent),
+    0 14px 36px color-mix(in srgb, black 55%, transparent);
+
+  /* On a dark page the inks are light, so they add instead of multiply. */
+  --plate-c: #38a6cf;
+  --plate-m: #ff458e;
+  --plate-y: #ffd23f;
+  --plate-k: #f3f2f2;
+  --plate-blend: screen;
+}
+
+/* --- page ---------------------------------------------------------------- */
+
+/* Overscroll and the strip behind the sticky header show the body, not the
+   page wrapper, so the body has to change paper with it. */
+body:has(.bs-page) {
+  background: var(--color-bg);
+  transition: background-color 240ms ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.bs-page) {
+    scroll-behavior: smooth;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bs-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color-scheme: light;
+  transition: background-color 240ms ease, color 240ms ease;
+}
+[data-theme="dark"] .bs-page {
+  color-scheme: dark;
+}
+/* Text colour is inherited as a resolved value, so a dark section has to
+   restate it against its own tokens. */
+.bs-inverse {
+  color: var(--color-text);
+  color-scheme: dark;
+}
+
+.bs-page :focus-visible {
+  outline: 2px solid var(--color-accent-600);
+  outline-offset: 2px;
+}
+
+/* :where() keeps these at element specificity, so any bs- class wins. */
+:where(.bs-page) h1,
+:where(.bs-page) h2,
+:where(.bs-page) h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--color-text);
+}
+:where(.bs-page) p {
+  margin: 0;
+}
+:where(.bs-page) code {
+  font-family: var(--font-mono);
+}
+
+/* Wide enough that a desktop screen isn't mostly margin; long lines are kept
+   readable by each text block's own max-width, not by the frame. */
+.bs-shell {
+  max-width: 1680px;
+  margin-inline: auto;
+  padding-inline: clamp(var(--space-4), 3vw, 48px);
+}
+
+.bs-section {
+  margin-top: calc(var(--space-8) * 1.75);
+  scroll-margin-top: 90px;
+}
+@media (max-width: 640px) {
+  .bs-section {
+    margin-top: calc(var(--space-8) * 1.25);
+  }
+}
+
+.bs-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  align-items: flex-end;
+}
+.bs-col-5 {
+  flex: 5 1 320px;
+  min-width: 0;
+}
+.bs-col-7 {
+  flex: 7 1 420px;
+  min-width: 0;
+}
+.bs-col-wide {
+  flex-basis: 520px;
+}
+
+/* The gap between columns, and between the same blocks once they stack:
+   generous side by side on a wide screen, half that on a phone. */
+.bs-hero-grid,
+.bs-states,
+.bs-token-grid,
+.bs-app-row {
+  gap: clamp(var(--space-6), 4vw, var(--space-8));
+}
+.bs-app-row {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+}
+
+/* --- type ---------------------------------------------------------------- */
+
+.bs-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bs-method {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.bs-mono {
+  font-family: var(--font-mono);
+}
+.bs-muted {
+  color: var(--color-neutral-700);
+}
+.bs-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Balanced, so a narrow screen breaks "Your API, before / you write" rather
+   than stranding "write" on a line of its own. */
+.bs-h1 {
+  font-size: clamp(40px, 6vw, 96px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.bs-h1-em {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.bs-h2 {
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.bs-h3 {
+  margin-top: var(--space-4);
+  font-size: clamp(22px, 1.9vw, 27px);
+  line-height: 1.15;
+}
+.bs-lede {
+  font-size: clamp(17px, 1.35vw, 20px);
+  line-height: 1.5;
+  max-width: 36em;
+  text-wrap: pretty;
+}
+
+/*
+ * Printed type, slightly out of register: the black plate is the real text,
+ * and three aria-hidden copies in process inks sit over it, each nudged a
+ * fraction of an em. Multiplied over black they vanish, so the colour only
+ * shows as fringes where a plate overhangs a glyph's edge.
+ */
+.bs-cmyk {
+  position: relative;
+  display: block;
+  isolation: isolate;
+}
+.bs-plate {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  mix-blend-mode: var(--plate-blend);
+}
+.bs-plate-c {
+  color: var(--plate-c);
+  transform: translate(-0.022em, -0.008em);
+}
+.bs-plate-m {
+  color: var(--plate-m);
+  transform: translate(0.02em, 0.006em);
+}
+.bs-plate-y {
+  color: var(--plate-y);
+  transform: translate(0.004em, 0.022em);
+}
+@media print, (forced-colors: active) {
+  .bs-plate {
+    display: none;
+  }
+}
+
+/* --- controls ------------------------------------------------------------ */
+
+.bs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease,
+    transform 120ms ease;
+}
+.bs-btn:hover {
+  text-decoration: none;
+}
+.bs-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.bs-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bs-btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.bs-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: var(--color-on-primary);
+}
+
+.bs-btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-300);
+  color: var(--color-text);
+}
+.bs-btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+.bs-btn-secondary[aria-pressed="true"] {
+  background: var(--color-accent-100);
+  border-color: var(--color-accent);
+  color: var(--color-accent-800);
+}
+.bs-btn-secondary[aria-pressed="true"]:hover:not(:disabled) {
+  border-color: var(--color-accent-700);
+  color: var(--color-accent-800);
+}
+/* Failure is magenta everywhere on the page, including the switch for it. */
+.bs-btn-secondary[aria-pressed="true"][data-tone="bad"] {
+  background: var(--color-accent-2-100);
+  border-color: var(--color-accent-2);
+  color: var(--color-accent-2-800);
+}
+.bs-btn-secondary[aria-pressed="true"][data-tone="bad"]:hover:not(:disabled) {
+  border-color: var(--color-accent-2-700);
+  color: var(--color-accent-2-800);
+}
+
+.bs-btn-ghost {
+  padding-inline: var(--space-2);
+  color: var(--color-accent-700);
+}
+.bs-btn-ghost:hover:not(:disabled) {
+  color: var(--color-accent-800);
+}
+.bs-btn-bare {
+  padding-inline: 0;
+}
+
+.bs-btn-sm {
+  padding: 7px 12px;
+  font-size: 14px;
+}
+.bs-btn-toggle {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 400;
+}
+.bs-btn-pick {
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+}
+.bs-btn-pick:hover:not(:disabled) {
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
+}
+
+.bs-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 17px;
+  line-height: 1.3;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.bs-input::placeholder {
+  color: var(--color-neutral-600);
+}
+.bs-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+/* A row of radio buttons drawn as one control. The input covers its label,
+   so a click anywhere on the option selects it and arrow keys still work. */
+.bs-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-divider);
+}
+.bs-seg-opt {
+  position: relative;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.bs-seg-opt:hover {
+  color: var(--color-text);
+}
+.bs-seg-opt[data-checked="true"] {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+.bs-seg-opt input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.bs-seg-opt:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent-600);
+  outline-offset: 2px;
+}
+
+.bs-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- brand and ticker --------------------------------------------------- */
+
+/* The header itself is the workspace pages' (ds- classes, in
+   design-system.css); this page draws its own mark only in the footer. */
+.bs-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+}
+.bs-brand:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+/* "Mockbird" has no descenders, but its line box still keeps room for them,
+   so centring the box leaves the letters riding high against the square.
+   This lowers the word until its letters are centred on the mark. */
+.bs-brand-name {
+  transform: translateY(0.14em);
+}
+.bs-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  /* The workspace pages' corner, so the mark is the same everywhere. */
+  border-radius: 2px;
+  background: var(--color-text);
+}
+
+/* The route ticker, in the header's rail. */
+.bs-ticker {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  /* The rail's own height, as on the workspace pages. */
+  padding-block: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+.bs-ticker > * {
+  flex: none;
+}
+.bs-ticker-route {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* HTTP verbs in their own inks, wherever a method label appears. */
+.bs-method[data-method="GET"] {
+  color: var(--color-accent-700);
+}
+.bs-method[data-method="POST"] {
+  color: var(--color-ok-700);
+}
+.bs-method[data-method="PUT"],
+.bs-method[data-method="PATCH"] {
+  color: var(--color-accent-3-800);
+}
+.bs-method[data-method="DELETE"] {
+  color: var(--color-accent-2-700);
+}
+
+/* --- hero ---------------------------------------------------------------- */
+
+.bs-hero {
+  padding-top: var(--space-7);
+  scroll-margin-top: 90px;
+}
+/* Top-aligned: stretching the copy to the demo card's height only opened a
+   hole in the middle of it. */
+.bs-hero-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-top: var(--space-7);
+}
+.bs-hero-copy {
+  flex: 5 1 320px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.bs-hero-lede {
+  max-width: 30em;
+  font-size: clamp(18px, 1.5vw, 22px);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.bs-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+.bs-facts dt {
+  white-space: nowrap;
+}
+/* Each fact wears the ink its feature uses further down the page: a bright
+   square of it, and the label in a darker shade that stays readable. */
+.bs-facts dt::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fact-ink);
+  vertical-align: 1px;
+}
+.bs-facts dt[data-tone="live"] {
+  --fact-ink: var(--color-ok);
+  color: var(--color-ok-700);
+}
+.bs-facts dt[data-tone="latency"] {
+  --fact-ink: var(--color-accent);
+  color: var(--color-accent-700);
+}
+.bs-facts dt[data-tone="failures"] {
+  --fact-ink: var(--color-accent-2);
+  color: var(--color-accent-2-700);
+}
+.bs-facts dt[data-tone="routing"] {
+  --fact-ink: var(--color-accent-3);
+  color: var(--color-accent-3-800);
+}
+.bs-facts dd {
+  margin: 0;
+  color: var(--color-neutral-800);
+}
+.bs-hero-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.bs-colorbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+}
+.bs-colorbar-ink {
+  display: flex;
+}
+.bs-colorbar-ink > span {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 640px) {
+  .bs-hero {
+    padding-top: var(--space-6);
+  }
+  .bs-hero-grid {
+    margin-top: var(--space-6);
+  }
+}
+
+/* --- the demo card ------------------------------------------------------- */
+
+.bs-try {
+  flex: 7 1 520px;
+  min-width: 0;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  scroll-margin-top: 100px;
+}
+@media (max-width: 520px) {
+  .bs-try {
+    padding: var(--space-4);
+  }
+}
+.bs-try-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.bs-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.bs-row > .bs-input {
+  flex: 1 1 280px;
+  width: auto;
+}
+/* Once a Create button wraps under its input, it takes the full row. */
+@media (max-width: 520px) {
+  .bs-row > .bs-input + .bs-btn-primary {
+    flex: 1 1 100%;
+  }
+}
+.bs-try .bs-input,
+.bs-try .bs-seg {
+  background: var(--color-bg);
+}
+.bs-push {
+  margin-left: auto;
+}
+
+.bs-response {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.bs-response-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-2);
+}
+.bs-response-url {
+  flex: 1 1 240px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-neutral-600);
+}
+.bs-response-url[data-live="true"] {
+  color: var(--color-text);
+}
+
+.bs-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+.bs-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-400);
+}
+.bs-status[data-tone="live"]::before {
+  background: var(--color-accent);
+}
+.bs-status[data-tone="ok"] {
+  color: var(--color-ok-700);
+}
+.bs-status[data-tone="ok"]::before {
+  background: var(--color-ok);
+}
+.bs-status[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+.bs-status[data-tone="bad"]::before {
+  background: var(--color-accent-2);
+}
+
+.bs-progress {
+  position: relative;
+  height: 2px;
+  margin-inline: var(--space-4);
+  overflow: hidden;
+  background: var(--color-divider);
+}
+.bs-progress > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-accent);
+  transition: width 160ms linear, background-color 300ms ease;
+}
+.bs-progress[data-tone="ok"] > span {
+  background: var(--color-ok);
+}
+.bs-progress[data-tone="bad"] > span {
+  background: var(--color-accent-2);
+}
+
+/* Tall enough for the default preview — two records and a count — to show
+   whole, rather than clipping its closing bracket. */
+.bs-response-body {
+  height: 360px;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.bs-line {
+  min-height: 1.65em;
+  white-space: pre;
+}
+.bs-line[data-tone="muted"] {
+  color: var(--color-neutral-600);
+}
+.bs-line[data-tone="accent"] {
+  color: var(--color-accent-700);
+}
+.bs-line[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+
+.bs-j-key {
+  color: var(--code-key);
+}
+.bs-j-str {
+  color: var(--code-string);
+}
+.bs-j-num {
+  color: var(--code-number);
+}
+.bs-j-lit {
+  color: var(--code-literal);
+}
+.bs-j-punct {
+  color: var(--code-punct);
+}
+/* A dimmed body — the idle sketch, or the last response while calling
+   again — keeps its colours, faded, rather than going grey. */
+.bs-line[data-tone="muted"][data-json="true"] {
+  opacity: 0.62;
+}
+
+.bs-response-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-height: 66px;
+  padding: var(--space-3) var(--space-4);
+  /* Brought into view after a create: clear of the sticky header above,
+     with a little paper below. */
+  scroll-margin-top: 100px;
+  scroll-margin-bottom: var(--space-4);
+}
+/* On a phone the way into the workspace takes the whole width. */
+@media (max-width: 640px) {
+  .bs-response-foot .bs-open-ws {
+    flex-basis: 100%;
+  }
+}
+.bs-calls {
+  display: flex;
+  gap: 3px;
+}
+.bs-calls > span {
+  width: 9px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ok);
+  transition: background-color 300ms ease;
+}
+.bs-calls > span[data-bad="true"] {
+  background: var(--color-accent-2);
+}
+
+/* --- the three states ---------------------------------------------------- */
+
+.bs-states {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  margin-top: var(--space-7);
+}
+.bs-state {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bs-state > p {
+  margin-top: var(--space-2);
+  text-wrap: pretty;
+}
+/*
+ * Each state's number is printed in the ink its figure uses, with the black
+ * plate slipped out of register behind it — two-colour newsprint.
+ */
+.bs-numeral {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  font-family: var(--font-heading);
+  font-size: clamp(52px, 5vw, 80px);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+}
+.bs-numeral-ink {
+  position: relative;
+  color: var(--numeral-ink);
+}
+.bs-numeral-key {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  color: var(--numeral-key);
+  transform: translate(0.05em, 0.04em);
+  user-select: none;
+}
+.bs-numeral[data-ink="c"] {
+  --numeral-ink: var(--plate-c);
+}
+.bs-numeral[data-ink="m"] {
+  --numeral-ink: var(--plate-m);
+}
+.bs-numeral[data-ink="y"] {
+  --numeral-ink: var(--plate-y);
+}
+.bs-figure {
+  margin: var(--space-6) 0 0;
+}
+.bs-caption {
+  margin-top: var(--space-3);
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+
+.bs-track {
+  position: relative;
+  height: 22px;
+}
+.bs-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10px;
+  height: 2px;
+  background: var(--color-divider);
+}
+.bs-track-fill {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 25%;
+  height: 2px;
+  background: var(--color-accent);
+}
+.bs-tick {
+  position: absolute;
+  top: 5px;
+  width: 1px;
+  height: 12px;
+  background: var(--color-neutral-400);
+}
+.bs-tick[data-on="true"] {
+  background: var(--color-accent);
+}
+/* The request travels to the configured delay, waits there, and repeats. */
+.bs-traveller {
+  position: absolute;
+  top: 6px;
+  left: 25%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bs-traveller {
+    animation: bs-travel 3600ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+}
+@keyframes bs-travel {
+  0% {
+    left: 0%;
+  }
+  55%,
+  100% {
+    left: 25%;
+  }
+}
+.bs-track-labels {
+  position: relative;
+  height: 24px;
+  margin-top: var(--space-1);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+.bs-track-labels > span {
+  position: absolute;
+  white-space: nowrap;
+}
+/* Centred over the 2 s tick, but never so far left it runs into "0 s" on
+   the narrowest three-column layout. */
+.bs-track-labels > .bs-track-setting {
+  left: max(25%, 80px);
+  transform: translateX(-50%);
+  font-weight: 600;
+  color: var(--color-accent-700);
+}
+
+.bs-fail-grid {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 3px;
+}
+.bs-fail-grid > span {
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ok-200);
+  transition: background-color 420ms ease;
+}
+.bs-fail-grid > span[data-bad="true"] {
+  background: var(--color-accent-2);
+}
+.bs-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bs-probe {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-2);
+}
+.bs-route {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 5px var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-neutral-700);
+  transition: background-color 220ms ease, color 220ms ease;
+}
+.bs-route[data-state="passed"] {
+  color: var(--color-neutral-500);
+}
+.bs-route[data-state="scanning"] {
+  background: var(--color-neutral-200);
+}
+.bs-route[data-state="won"] {
+  background: var(--color-accent-3-200);
+  color: var(--color-text);
+}
+.bs-route-spec {
+  flex: none;
+  width: 30px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-600);
+}
+.bs-route-pattern {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.bs-route-tag {
+  font-size: 14px;
+  color: var(--color-neutral-600);
+}
+.bs-route[data-state="won"] .bs-route-tag {
+  font-weight: 600;
+  color: var(--color-accent-3-800);
+}
+
+/* --- tokens -------------------------------------------------------------- */
+
+.bs-request {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-6);
+}
+.bs-request-field {
+  flex: 1 1 320px;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.bs-request-field .bs-input {
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.bs-token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: start;
+  margin-top: var(--space-6);
+}
+.bs-token-grid > * {
+  min-width: 0;
+  margin: 0;
+}
+.bs-code {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  overflow: auto;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.bs-code .bs-line {
+  min-height: 1.75em;
+}
+/* Highlighter chips: yellow for a token as written, cyan for what it
+   resolved to, magenta for the parts of a 404 that point the way. */
+.bs-chip-y,
+.bs-chip-c,
+.bs-chip-m {
+  border-radius: var(--radius-sm);
+}
+.bs-chip-y {
+  background: var(--color-accent-3-200);
+  color: var(--color-accent-3-900);
+}
+.bs-chip-c {
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
+}
+.bs-chip-m {
+  background: var(--color-accent-2-100);
+  color: var(--color-accent-2-800);
+}
+
+.bs-table {
+  width: 100%;
+  margin-top: var(--space-1);
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.bs-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-divider);
+  vertical-align: top;
+}
+.bs-table td:first-child {
+  padding-left: 0;
+  white-space: nowrap;
+}
+.bs-table td:last-child {
+  padding-right: 0;
+  text-wrap: pretty;
+}
+
+/* --- in your app --------------------------------------------------------- */
+
+/* The code card is a dark .bs-inverse surface on light and dark pages alike. */
+.bs-snippet {
+  gap: 0;
+  padding: 0;
+  background: var(--code-bg);
+}
+.bs-s-comment {
+  color: var(--color-neutral-500);
+}
+.bs-s-str {
+  color: var(--color-accent-3-500);
+}
+.bs-s-kw {
+  color: var(--color-accent-600);
+}
+.bs-s-prompt {
+  color: var(--color-accent-2-600);
+}
+.bs-snippet-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.bs-snippet-head .bs-seg {
+  background: var(--color-bg);
+}
+.bs-snippet-body {
+  padding: var(--space-2) var(--space-4) var(--space-6);
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.bs-snippet-body .bs-line {
+  min-height: 1.75em;
+}
+.bs-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: 16px;
+  color: var(--color-ok-700);
+}
+.bs-notice svg {
+  margin-top: 3px;
+}
+
+/* --- colour bands -------------------------------------------------------- */
+
+/* Full-width colour sections. Adjacent bands butt together, like colour
+   blocks on a printed page, and run straight into the footer. */
+.bs-band {
+  margin-top: calc(var(--space-8) * 1.75);
+  padding-block: calc(var(--space-8) * 1.25);
+  scroll-margin-top: 90px;
+}
+.bs-band + .bs-band {
+  margin-top: 0;
+}
+.bs-band-yellow {
+  background: var(--band-yellow);
+}
+.bs-band-teal {
+  background: var(--band-teal);
+}
+/* On teal the field stays paper-white and the button turns yellow, so
+   neither sinks into the band. */
+.bs-band-teal .bs-input {
+  border-color: transparent;
+  background: #fffdf8;
+  color: #1c1a19;
+}
+.bs-band-teal .bs-input::placeholder {
+  color: #6f6a63;
+}
+.bs-band-teal .bs-btn-primary {
+  background: #ffd43b;
+  border-color: #ffd43b;
+  color: #1c1a19;
+}
+.bs-band-teal .bs-btn-primary:hover:not(:disabled) {
+  background: #ffe066;
+  border-color: #ffe066;
+  color: #1c1a19;
+}
+@media (max-width: 640px) {
+  .bs-band {
+    margin-top: calc(var(--space-8) * 1.25);
+    padding-block: var(--space-7);
+  }
+}
+
+/* --- where the AI sits --------------------------------------------------- */
+
+.bs-ai {
+  --quote-size: clamp(28px, 3.3vw, 48px);
+}
+.bs-quote {
+  margin-top: var(--space-4);
+  font-size: var(--quote-size);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+/* Drops the paragraph so its first line shares a baseline with the quote's
+   at any quote size, which only means anything while the two sit side by
+   side. */
+.bs-aside {
+  padding-top: calc(18px + 0.91 * var(--quote-size));
+}
+@media (max-width: 854px) {
+  .bs-aside {
+    padding-top: 0;
+  }
+}
+
+/* Sized so "Point your app / somewhere real." sets on two lines in its column. */
+.bs-close-h2 {
+  font-size: clamp(38px, 4.4vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+/* --- footer -------------------------------------------------------------- */
+
+/* An ink back page, run as a .bs-inverse section. */
+.bs-footer {
+  padding-block: var(--space-8);
+  background: var(--code-bg);
+}
+.bs-footer .bs-kicker[data-ink="c"] {
+  color: var(--color-accent-600);
+}
+.bs-footer .bs-kicker[data-ink="m"] {
+  color: var(--color-accent-2-600);
+}
+.bs-footer .bs-kicker[data-ink="y"] {
+  color: var(--color-accent-3-500);
+}
+.bs-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-8);
+}
+@media (max-width: 640px) {
+  .bs-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+  .bs-footer-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+.bs-footer-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: 15px;
+}
+.bs-footer-col > .bs-kicker {
+  margin-bottom: var(--space-1);
+  font-size: 12px;
+}
+.bs-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+.bs-footer-link:hover {
+  color: var(--color-accent-700);
+  text-decoration: none;
+}
+.bs-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-7);
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}

@@ -1,0 +1,847 @@
+/* ---------------------------------------------------------------------------
+   Broadsheet, the design system from the redesign handoff: its tokens and
+   components, as used by the workspace pages (the workspace list, a
+   workspace, the 404).
+
+   The home page keeps its own look in broadsheet.css, whose bs- classes and
+   :root tokens share names with these. So everything here is fenced off:
+   the classes carry a ds- prefix, the base element rules apply only inside a
+   .ds-page, and the tokens apply only on a page that has one. The one
+   exception is the home page's header, which is the workspace header: it
+   carries .ds-scope, which gives just that element the tokens and the type.
+   The light values are the day edition, the [data-theme="dark"] block the
+   night one.
+   --------------------------------------------------------------------------- */
+
+:root:has(.ds-page),
+.ds-scope {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #0088b0;
+  --color-accent-2: #d6006c;
+  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+
+  /* Tonal ramps on one shared lightness scale, so the same step of any role
+     matches the others in visual value. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #e9f8ff;
+  --color-accent-200: #cbeeff;
+  --color-accent-300: #99e0ff;
+  --color-accent-400: #62c5ee;
+  --color-accent-500: #38a6cf;
+  --color-accent-600: #1186ac;
+  --color-accent-700: #006786;
+  --color-accent-800: #004961;
+  --color-accent-900: #0a303e;
+
+  --color-accent-2-100: #fff1f4;
+  --color-accent-2-200: #ffdee6;
+  --color-accent-2-300: #ffc0d0;
+  --color-accent-2-400: #ff90b1;
+  --color-accent-2-500: #ff458e;
+  --color-accent-2-600: #d82071;
+  --color-accent-2-700: #aa0b56;
+  --color-accent-2-800: #790e3d;
+  --color-accent-2-900: #4b1528;
+
+  /* The third process ink. A print treatment for the plate type only;
+     body copy and chrome never take it. */
+  --color-process-yellow: #edbb00;
+
+  --space-1: 5px;
+  --space-2: 10px;
+  --space-3: 15px;
+  --space-4: 20px;
+  --space-6: 30px;
+  --space-8: 40px;
+
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+
+  /* The plates multiply onto paper: their overlap prints black. */
+  --plate-blend: multiply;
+  --ease-out: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+/* Fallback families, on the root only: next/font sets the real ones on
+   <body>, and a .ds-scope element must inherit those rather than shadow them. */
+:root:has(.ds-page) {
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* The night edition: the same roles with the ramps turned over. */
+:root:has(.ds-page)[data-theme="dark"],
+[data-theme="dark"] .ds-scope {
+  --color-bg: #201e1d;
+  --color-surface: #2d2b2b;
+  --color-text: #f3f2f2;
+  --color-accent: #38a6cf;
+  --color-accent-2: #ff458e;
+  --color-divider: color-mix(in srgb, #f3f2f2 18%, transparent);
+
+  --color-neutral-100: #2d2b2b;
+  --color-neutral-200: #444141;
+  --color-neutral-300: #605d5d;
+  --color-neutral-400: #7d7979;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #bab6b6;
+  --color-neutral-700: #d7d3d3;
+  --color-neutral-800: #eae7e7;
+  --color-neutral-900: #f8f4f4;
+
+  --color-accent-100: #0a303e;
+  --color-accent-200: #004961;
+  --color-accent-300: #006786;
+  --color-accent-400: #1186ac;
+  --color-accent-500: #38a6cf;
+  --color-accent-600: #62c5ee;
+  --color-accent-700: #99e0ff;
+  --color-accent-800: #cbeeff;
+  --color-accent-900: #e9f8ff;
+
+  --color-accent-2-100: #4b1528;
+  --color-accent-2-200: #790e3d;
+  --color-accent-2-300: #aa0b56;
+  --color-accent-2-400: #d82071;
+  --color-accent-2-500: #ff458e;
+  --color-accent-2-600: #ff90b1;
+  --color-accent-2-700: #ffc0d0;
+  --color-accent-2-800: #ffdee6;
+  --color-accent-2-900: #fff1f4;
+
+  --shadow-sm: 0 0 0 1px color-mix(in srgb, #f3f2f2 8%, transparent);
+  --shadow-md: 0 0 0 1px color-mix(in srgb, #f3f2f2 10%, transparent),
+    0 4px 14px color-mix(in srgb, black 40%, transparent);
+  --shadow-lg: 0 0 0 1px color-mix(in srgb, #f3f2f2 10%, transparent),
+    0 14px 36px color-mix(in srgb, black 55%, transparent);
+
+  /* On ink the plates add light instead: their overlap prints paper-white. */
+  --plate-blend: screen;
+}
+
+/* --- page ---------------------------------------------------------------- */
+
+/* next/font sets --font-serif and --font-mono on <body>; the families are
+   declared here so the home page's own --font-heading and --font-body, also
+   set on <body>, never reach the workspace. */
+.ds-page {
+  --font-heading: var(--font-serif);
+  --font-body: var(--font-serif);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: color 240ms ease;
+}
+.ds-page > main {
+  flex: 1 0 auto;
+}
+
+/* A ds- piece set into a page that isn't a .ds-page: the type of one, and
+   the paper of the page around it rather than the system's own. */
+.ds-scope {
+  --font-heading: var(--font-serif);
+  --font-body: var(--font-serif);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+}
+.ds-header.ds-scope {
+  background: inherit;
+}
+
+/* Overscroll and the strip behind the sticky header show the body. */
+body:has(.ds-page) {
+  margin: 0;
+  background: var(--color-bg);
+  color-scheme: light;
+  transition: background-color 240ms ease;
+}
+[data-theme="dark"] body:has(.ds-page) {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.ds-page) {
+    scroll-behavior: smooth;
+  }
+}
+
+.ds-page *,
+.ds-page *::before,
+.ds-page *::after {
+  box-sizing: border-box;
+}
+.ds-page :focus {
+  outline: none;
+}
+.ds-page :focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.ds-page ::selection {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+/* :where() keeps these at element specificity, so any class wins. */
+:where(.ds-page) :is(h1, h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+:where(.ds-page) p {
+  margin: 0;
+}
+:where(.ds-page) a {
+  color: var(--color-accent-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:where(.ds-page) a:hover {
+  color: var(--color-accent-800);
+}
+:where(.ds-page) :is(code, pre, kbd) {
+  font-family: var(--font-mono);
+}
+:where(.ds-page) figure {
+  margin: 0;
+}
+:where(.ds-page) :is(button, input, select, textarea) {
+  color: inherit;
+}
+
+/* Full width, with a slim gutter: a tool's screen is for the tool, and
+   long lines are kept readable by each text block's own max-width. */
+.ds-shell {
+  width: 100%;
+  padding-inline: clamp(16px, 2vw, 28px);
+}
+
+/* --- type ---------------------------------------------------------------- */
+
+.ds-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ds-method {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.ds-muted {
+  color: var(--color-neutral-700);
+}
+.ds-num {
+  font-variant-numeric: tabular-nums;
+}
+.ds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 640px) {
+  .ds-hide-sm {
+    display: none !important;
+  }
+}
+
+/* --- buttons ------------------------------------------------------------- */
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 120ms ease,
+    opacity 180ms ease;
+}
+.ds-btn:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.ds-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.ds-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ds-btn-primary,
+.ds-btn-primary:hover {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+.ds-btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-600);
+}
+.ds-btn-primary:active:not(:disabled) {
+  background: var(--color-accent-700);
+}
+.ds-btn-secondary {
+  border-color: var(--color-divider);
+}
+.ds-btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.ds-btn-secondary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+}
+.ds-btn-ghost,
+.ds-btn-ghost:hover {
+  color: var(--color-accent);
+  padding-inline: var(--space-1);
+}
+.ds-btn-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+.ds-btn-ghost:active:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+/* A ghost that sits flush in a line of text: no padding to hover into. */
+.ds-btn-bare,
+.ds-btn-bare:hover:not(:disabled),
+.ds-btn-bare:active:not(:disabled) {
+  padding-inline: 0;
+  background: none;
+}
+.ds-btn-bare:hover:not(:disabled) {
+  color: var(--color-accent-700);
+}
+/* Destructive ghosts and secondaries print in magenta. */
+.ds-btn[data-tone="danger"],
+.ds-btn[data-tone="danger"]:hover {
+  color: var(--color-accent-2-700);
+}
+.ds-btn-ghost[data-tone="danger"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent-2) 10%, transparent);
+}
+.ds-btn-danger,
+.ds-btn-danger:hover {
+  background: var(--color-accent-2-700);
+  border-color: var(--color-accent-2-700);
+  color: var(--color-bg);
+}
+.ds-btn-danger:hover:not(:disabled) {
+  background: var(--color-accent-2-800);
+  border-color: var(--color-accent-2-800);
+}
+.ds-btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+.ds-btn-block {
+  width: 100%;
+}
+.ds-btn-sm {
+  font-size: 14px;
+  padding: 7px 12px;
+}
+.ds-btn-ghost.ds-btn-sm {
+  padding: 6px 8px;
+}
+/* A pressable that stays down: the status, delay and failure chips. */
+.ds-btn[aria-pressed="true"] {
+  background: var(--color-accent-100);
+  border-color: var(--color-accent);
+  color: var(--color-accent-800);
+}
+.ds-btn[aria-pressed="true"][data-tone="bad"] {
+  background: var(--color-accent-2-100);
+  border-color: var(--color-accent-2);
+  color: var(--color-accent-2-800);
+}
+.ds-btn[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--color-accent-200);
+}
+.ds-btn[aria-pressed="true"][data-tone="bad"]:hover:not(:disabled) {
+  background: var(--color-accent-2-200);
+}
+
+/* --- forms --------------------------------------------------------------- */
+
+.ds-field > label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.ds-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  transition: border-color 180ms ease, background-color 240ms ease;
+}
+.ds-input::placeholder {
+  /* 65% ink clears 4.5:1 on the surface fill, still quieter than typed text. */
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+  opacity: 1;
+}
+.ds-input:hover {
+  border-color: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+.ds-input:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+.ds-input:disabled {
+  opacity: 0.6;
+}
+textarea.ds-input {
+  min-height: 90px;
+  resize: vertical;
+}
+.ds-input-mono {
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+select.ds-input {
+  cursor: pointer;
+}
+
+.ds-seg {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+.ds-seg-opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.ds-seg-opt + .ds-seg-opt {
+  border-left: 1px solid var(--color-divider);
+}
+.ds-seg-opt input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ds-seg-opt:has(input:checked) {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+.ds-seg-opt:not(:has(input:checked)):hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.ds-seg-opt:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+/* --- tables, tags --------------------------------------------------------- */
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ds-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+.ds-table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.ds-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+  white-space: nowrap;
+}
+.ds-tag-accent {
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
+}
+.ds-tag-accent-2 {
+  background: var(--color-accent-2-100);
+  color: var(--color-accent-2-800);
+}
+.ds-tag-neutral {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+}
+
+/* --- dialogs ------------------------------------------------------------- */
+
+.ds-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+  animation: ds-fade 200ms ease backwards;
+}
+.ds-dialog {
+  width: min(460px, 100%);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  animation: ds-dialog-in 280ms var(--ease-out) backwards;
+}
+.ds-dialog-title {
+  margin: 0;
+  font-size: 28px;
+}
+.ds-dialog-body {
+  margin-top: var(--space-2);
+  font-size: 15px;
+  color: color-mix(in srgb, var(--color-text) 85%, transparent);
+  text-wrap: pretty;
+}
+.ds-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+.ds-backdrop[data-exiting="true"] {
+  animation: ds-fade-out 180ms ease forwards;
+}
+.ds-backdrop[data-exiting="true"] .ds-dialog {
+  animation: ds-dialog-out 180ms ease forwards;
+}
+@keyframes ds-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ds-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ds-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+@keyframes ds-dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+/* --- plate type ---------------------------------------------------------- */
+
+/*
+ * Display type printed as misregistered process plates: a paper span carries
+ * the real text in the colour of the sheet, and three aria-hidden copies in
+ * cyan, magenta and yellow multiply over it. Where all three overlap the inks
+ * print black; the fringes are the registration drift.
+ */
+.ds-cmyk-head {
+  position: relative;
+  display: block;
+}
+.ds-cmyk-head .ds-paper {
+  color: var(--color-bg);
+  text-shadow: 0.027em 0.0185em 0 var(--color-bg), -0.0245em -0.0175em 0 var(--color-bg);
+}
+.ds-plate {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: var(--plate-blend);
+  pointer-events: none;
+  user-select: none;
+}
+.ds-plate-c {
+  color: var(--color-accent);
+}
+.ds-plate-m {
+  color: var(--color-accent-2);
+}
+.ds-plate-y {
+  color: var(--color-process-yellow);
+}
+.ds-cmyk-head .ds-plate-m {
+  translate: 0.018em 0.0125em;
+}
+.ds-cmyk-head .ds-plate-y {
+  translate: -0.0155em -0.0115em;
+}
+@media print, (forced-colors: active) {
+  .ds-plate {
+    display: none;
+  }
+  .ds-cmyk-head .ds-paper {
+    color: inherit;
+    text-shadow: none;
+  }
+}
+
+/* --- header and rail ----------------------------------------------------- */
+
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-bg);
+  transition: background-color 240ms ease;
+}
+.ds-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  padding-block: var(--space-3);
+}
+/* On a phone the header stays one line: tighter gaps, then, on the
+   narrowest, the brand's name gives way to its mark. */
+@media (max-width: 640px) {
+  .ds-nav {
+    flex-wrap: nowrap;
+    gap: var(--space-3);
+  }
+}
+@media (max-width: 359px) {
+  .ds-brand-name {
+    display: none;
+  }
+}
+.ds-nav a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 180ms ease;
+}
+.ds-nav a:hover,
+.ds-nav a[aria-current="page"] {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.ds-nav a.ds-btn-primary,
+.ds-nav a.ds-btn-primary:hover {
+  color: var(--color-bg);
+  font-size: 15px;
+}
+.ds-nav-current,
+.ds-nav a.ds-nav-current {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.ds-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* The home page's header uses the same sizes. Qualified, since a nav's
+   links are otherwise set at 16px. */
+.ds-nav a.ds-brand {
+  font-size: 26px;
+}
+.ds-brand .ds-mark {
+  width: 40px;
+  height: 40px;
+}
+@media (max-width: 640px) {
+  .ds-nav a.ds-brand {
+    font-size: 22px;
+  }
+  .ds-brand .ds-mark {
+    width: 36px;
+    height: 36px;
+  }
+}
+.ds-nav a.ds-brand:hover {
+  color: var(--color-text);
+}
+.ds-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--color-text);
+  transition: background-color 240ms ease;
+}
+
+/* Only one of the two glyphs shows, picked by the edition rather than by
+   script, so it's right before hydration. */
+.ds-edition .ds-icon-sun,
+[data-theme="dark"] .ds-edition .ds-icon-moon {
+  display: none;
+}
+[data-theme="dark"] .ds-edition .ds-icon-sun {
+  display: block;
+}
+
+/* The thick-thin rules round the masthead rail, the one place the page
+   draws rules at all. */
+.ds-rail::before,
+.ds-rail::after {
+  content: "";
+  display: block;
+  height: 8px;
+  border-color: var(--color-text);
+  border-style: solid;
+  border-width: 0;
+  transition: border-color 240ms ease;
+}
+.ds-rail::before {
+  border-top-width: 4px;
+  border-bottom-width: 1px;
+}
+.ds-rail::after {
+  border-top-width: 1px;
+  border-bottom-width: 4px;
+}
+.ds-rail-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-6);
+  padding-block: var(--space-2);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ds-rail-end {
+  margin-left: auto;
+  color: var(--color-neutral-700);
+}
+
+/* --- sizes and the response well ---------------------------------------- */
+
+.ds-btn-lg {
+  min-height: 46px;
+  padding-inline: var(--space-4);
+  font-size: 16px;
+}
+.ds-input-lg {
+  min-height: 46px;
+  font-size: 17px;
+}
+
+/* A status line with its dot: cyan while live or fine, magenta on an error. */
+.ds-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+.ds-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-400);
+  transition: background-color 300ms ease;
+}
+.ds-status[data-tone="live"]::before,
+.ds-status[data-tone="ok"]::before {
+  background: var(--color-accent);
+}
+.ds-status[data-tone="ok"] {
+  color: var(--color-text);
+}
+.ds-status[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+.ds-status[data-tone="bad"]::before {
+  background: var(--color-accent-2);
+}
+.ds-progress {
+  position: relative;
+  height: 2px;
+  margin: 0 var(--space-4);
+  overflow: hidden;
+  background: var(--color-divider);
+}
+.ds-progress > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--color-accent);
+  transition: width 160ms linear, background-color 300ms ease;
+}
+.ds-progress[data-tone="bad"] > span {
+  background: var(--color-accent-2);
+}

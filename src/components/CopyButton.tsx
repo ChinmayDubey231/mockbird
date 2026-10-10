@@ -1,50 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-function CopyIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{ flex: "none" }}
-    >
-      <rect x="8" y="8" width="12" height="12" rx="2" />
-      <path d="M4 16V6a2 2 0 0 1 2-2h10" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{ flex: "none" }}
-    >
-      <path d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
+import { useEffect, useRef, useState } from "react";
+import { CheckIcon, CopyIcon, TerminalIcon } from "./icons";
 
 type Status = "idle" | "done" | "error";
 
 /** navigator.clipboard needs a secure context; fall back to the old execCommand trick. */
-async function copyToClipboard(value: string): Promise<void> {
+export async function copyToClipboard(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(value);
     return;
@@ -65,15 +27,21 @@ export function CopyButton({
   value,
   label = "Copy",
   variant = "button",
-  hideLabelOnNarrow = false,
+  icon = "copy",
+  iconOnly = false,
 }: {
   value: string;
   label?: string;
-  /** "ghost" drops the border/background so the button can sit inside another chip. */
+  /** "ghost" drops the border, for a button that sits in a line of text. */
   variant?: "button" | "ghost";
-  hideLabelOnNarrow?: boolean;
+  /** The terminal glyph marks a copy of a command rather than a value. */
+  icon?: "copy" | "terminal";
+  /** Just the glyph, with the label kept for screen readers and the tooltip. */
+  iconOnly?: boolean;
 }) {
   const [status, setStatus] = useState<Status>("idle");
+  const timer = useRef<number>();
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const copy = async () => {
     try {
@@ -81,37 +49,36 @@ export function CopyButton({
       setStatus("done");
     } catch {
       setStatus("error");
-    } finally {
-      setTimeout(() => setStatus("idle"), 1600);
     }
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setStatus("idle"), 1600);
   };
 
-  const tone = status === "done" ? "var(--ok)" : status === "error" ? "var(--server-err)" : undefined;
   const text = status === "done" ? "Copied" : status === "error" ? "Couldn't copy" : label;
+  const size = iconOnly ? 17 : 16;
+  const glyph =
+    status === "done" ? <CheckIcon size={size} /> : icon === "terminal" ? <TerminalIcon size={size} /> : <CopyIcon size={size} />;
+  const classes = [
+    "ds-btn",
+    variant === "ghost" ? "ds-btn-ghost" : "ds-btn-secondary",
+    iconOnly ? "ds-btn-icon ws-copy-only" : "ds-btn-sm",
+    "ws-copy",
+  ].join(" ");
 
   return (
     <button
       type="button"
-      className={variant === "button" ? "btn btn-sm" : undefined}
+      className={classes}
+      data-state={status}
       onClick={copy}
-      title={status === "error" ? "Couldn't copy — select and copy it manually" : value}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        color: tone,
-        borderColor: variant === "button" ? tone : undefined,
-        background: variant === "ghost" ? "transparent" : undefined,
-        border: variant === "ghost" ? "none" : undefined,
-        padding: variant === "ghost" ? 4 : undefined,
-        fontSize: variant === "ghost" ? 12.5 : undefined,
-        cursor: "pointer",
-      }}
+      title={status === "error" ? "Couldn't copy. Select and copy it manually." : iconOnly ? text : value}
+      aria-label={iconOnly ? text : undefined}
     >
-      {status === "done" ? <CheckIcon /> : <CopyIcon />}
-      <span className={hideLabelOnNarrow ? "copy-btn-label" : undefined} aria-live="polite">
-        {text}
+      {/* Keyed so the tick remounts, and pops, each time it appears. */}
+      <span className="ws-copy-icon" key={status === "done" ? "done" : "copy"}>
+        {glyph}
       </span>
+      {!iconOnly && <span aria-live="polite">{text}</span>}
     </button>
   );
 }

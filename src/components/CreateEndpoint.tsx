@@ -1,52 +1,97 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { compilePath, InvalidPathError } from "@/lib/path";
 import type { EndpointDTO } from "./Dashboard";
+import { SparkleIcon, XIcon } from "./icons";
+import { jsonError } from "./status";
+import { useExitTransition } from "./useExitTransition";
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
+/** What the drawer opens with, when it's opened from an example. */
+export interface EndpointDraft {
+  method?: string;
+  path?: string;
+  description?: string;
+}
+const PATH_HELP = "Use :name for a path param and a trailing * to match any depth.";
+
+/**
+ * The new-endpoint drawer. It slides in from the right and back out before
+ * it unmounts, both when it's dismissed and once an endpoint is created; by
+ * then the new endpoint is already selected behind it.
+ */
 export function CreateEndpoint({
   workspaceId,
+  workspaceKey,
+  origin,
+  initial = {},
   onClose,
   onCreated,
 }: {
   workspaceId: string;
+  workspaceKey: string;
+  origin: string;
+  initial?: EndpointDraft;
   onClose: () => void;
   onCreated: (endpoint: EndpointDTO) => void;
 }) {
-  const [tab, setTab] = useState<"describe" | "write">("describe");
-  const [method, setMethod] = useState("GET");
-  const [path, setPath] = useState("/orders");
-  const [description, setDescription] = useState("");
+  const [mode, setMode] = useState<"describe" | "write">("describe");
+  const [method, setMethod] = useState(initial.method ?? "GET");
+  const [path, setPath] = useState(initial.path ?? "/orders/:id");
+  const [description, setDescription] = useState(initial.description ?? "");
   const [body, setBody] = useState("{\n  \n}");
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [generated, setGenerated] = useState(false);
+  const [generated, setGenerated] = useState(0);
+  const { exiting, exit } = useExitTransition(onClose, 220);
+  const pathRef = useRef<HTMLInputElement>(null);
+  const generateRef = useRef<HTMLButtonElement>(null);
+
+  // Opened from an example, everything is filled in and Generate is the
+  // next step; otherwise the path comes first.
+  useEffect(() => {
+    (initial.description ? generateRef.current : pathRef.current)?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") exit();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [exit]);
+
+  // The route as the server will store it, or why it won't.
+  const route = useMemo(() => {
+    const raw = path.trim();
+    if (!raw.replace(/\//g, "")) return null;
+    try {
+      return { ok: true as const, ...compilePath(raw.startsWith("/") ? raw : `/${raw}`) };
+    } catch (err) {
+      return { ok: false as const, message: err instanceof InvalidPathError ? err.message : "That path isn't valid" };
+    }
+  }, [path]);
+  const bodyValid = jsonError(body) === null;
 
   const generate = async () => {
+    if (!description.trim() || generating) return;
     setGenerating(true);
     setError(null);
     try {
       const res = await fetch(`/api/workspaces/${workspaceId}/generate`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ description, method, path }),
+        body: JSON.stringify({ description, method, path: route?.ok ? route.path : path }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
       setBody(JSON.stringify(data.sample, null, 2));
       setNote(data.note ?? null);
-      setGenerated(true);
+      setGenerated((n) => n + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
@@ -55,18 +100,18 @@ export function CreateEndpoint({
   };
 
   const create = async () => {
+    if (!route?.ok || !bodyValid || saving) return;
     setSaving(true);
     setError(null);
     try {
-      const parsed = JSON.parse(body);
       const res = await fetch(`/api/workspaces/${workspaceId}/endpoints`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           method,
-          path,
-          description: description || null,
-          responseBody: parsed,
+          path: route.path,
+          description: mode === "describe" && description.trim() ? description.trim() : null,
+          responseBody: JSON.parse(body),
           statusCode: method === "POST" ? 201 : 200,
         }),
       });
@@ -76,226 +121,173 @@ export function CreateEndpoint({
         id: data.id,
         method: data.method,
         path: data.path,
-        description: data.description,
         responseBody: JSON.stringify(data.responseBody, null, 2),
         statusCode: data.statusCode,
         delayMs: data.delayMs,
         failureRate: data.failureRate,
         failureStatus: data.failureStatus,
         isActive: data.isActive,
-        hitCount: data.hitCount,
         specificity: data.specificity,
       });
+      exit();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create the endpoint");
-    } finally {
       setSaving(false);
     }
   };
 
-  const bodyValid = (() => {
-    try {
-      JSON.parse(body);
-      return true;
-    } catch {
-      return false;
-    }
-  })();
+  const host = origin.replace(/^https?:\/\//, "");
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 40, background: "var(--scrim)", display: "flex", justifyContent: "flex-end" }}
-      onClick={onClose}
+      className="ws-scrim"
+      data-exiting={exiting}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) exit();
+      }}
     >
-      <div
-        role="dialog"
-        aria-label="Create endpoint"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(560px, 100%)",
-          background: "var(--surface)",
-          borderLeft: "1px solid var(--rule)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flex: "none",
-            padding: "13px 20px",
-            borderBottom: "1px solid var(--rule)",
-          }}
-        >
-          <h2>New endpoint</h2>
-          <span style={{ flex: 1, minWidth: 0 }} />
-          <button className="btn btn-sm" onClick={onClose}>
-            Close
+      <div role="dialog" aria-modal="true" aria-labelledby="new-endpoint-title" className="ws-drawer">
+        <div className="ws-drawer-head">
+          <h2 id="new-endpoint-title">New endpoint</h2>
+          <button type="button" className="ds-btn ds-btn-ghost ds-btn-icon" onClick={exit} aria-label="Close">
+            <XIcon size={20} />
           </button>
         </div>
 
-        <div
-          style={{
-            flex: "1 1 auto",
-            minHeight: 0,
-            overflowY: "auto",
-            padding: "16px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div>
-            <div style={{ display: "flex", gap: 8 }}>
+        <div className="ws-drawer-body">
+          <div className="ws-stack">
+            <div className="ws-route-input">
               <select
-                className="select"
-                style={{ width: 110, flex: "none" }}
+                className="ds-input"
+                aria-label="Method"
                 value={method}
                 onChange={(e) => setMethod(e.target.value)}
+                style={{ minHeight: 46 }}
               >
                 {METHODS.map((m) => (
                   <option key={m}>{m}</option>
                 ))}
               </select>
               <input
-                className="input mono"
-                style={{ flex: "1 1 auto", minWidth: 0 }}
+                ref={pathRef}
+                className="ds-input ds-input-mono"
+                aria-label="Path"
+                aria-invalid={route?.ok === false}
                 value={path}
                 onChange={(e) => setPath(e.target.value)}
                 placeholder="/orders/:id"
-                aria-label="Path"
+                spellCheck={false}
+                autoComplete="off"
               />
             </div>
-            <p className="small muted" style={{ marginTop: 6 }}>
-              Use <code className="mono">:name</code> for a path parameter and a trailing{" "}
-              <code className="mono">*</code> to match any depth below.
-            </p>
-          </div>
-
-          <div>
-            <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--rule)" }}>
-              <TabButton on={tab === "describe"} onClick={() => setTab("describe")}>
-                Describe it
-              </TabButton>
-              <TabButton on={tab === "write"} onClick={() => setTab("write")}>
-                Write it
-              </TabButton>
-            </div>
-
-            {tab === "describe" ? (
-              <div style={{ marginTop: 14 }}>
-                <textarea
-                  className="textarea"
-                  rows={3}
-                  maxLength={500}
-                  placeholder="a single order with id, customer name, total in rupees, status, and an array of line items"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ fontFamily: "var(--sans)" }}
-                />
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                  <span className="small muted" style={{ flex: "none" }}>
-                    {description.length}/500
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0 }} />
-                  <button className="btn" onClick={generate} disabled={generating || !description.trim()}>
-                    {generating ? "Generating…" : generated ? "Regenerate" : "Generate"}
-                  </button>
-                </div>
-              </div>
+            {route?.ok === false ? (
+              <span className="ws-alert" style={{ fontSize: 14 }}>
+                {route.message}.
+              </span>
             ) : (
-              <p className="small muted" style={{ marginTop: 14 }}>
-                Write the JSON below. Nothing is generated and no model runs.
-              </p>
+              <span className="ws-note">{route ? `Specificity ${route.specificity}. ${PATH_HELP}` : PATH_HELP}</span>
             )}
           </div>
 
-          <div>
-            <span className="small muted" style={{ display: "block", marginBottom: 6 }}>
-              {tab === "describe" && generated ? "Preview — edit anything before saving" : "Response body"}
-            </span>
+          <div className="ws-stack-lg">
+            <div className="ds-seg" role="radiogroup" aria-label="How to create the body" style={{ alignSelf: "flex-start" }}>
+              {(
+                [
+                  ["describe", "Describe it"],
+                  ["write", "Write it"],
+                ] as const
+              ).map(([value, label]) => (
+                <label key={value} className="ds-seg-opt">
+                  <input type="radio" name="new-endpoint-mode" checked={mode === value} onChange={() => setMode(value)} />
+                  {label}
+                </label>
+              ))}
+            </div>
+
+            {/* Keyed, so switching modes fades the new one in. */}
+            <div key={mode} className="ws-swap ws-stack-lg">
+              {mode === "describe" ? (
+                <>
+                  <textarea
+                    className="ds-input"
+                    rows={3}
+                    maxLength={500}
+                    aria-label="Describe the response"
+                    placeholder="A single order with id, customer name, total in rupees, status and line items"
+                    value={description}
+                    style={{ fontSize: 17 }}
+                    onChange={(e) => setDescription(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) generate();
+                    }}
+                  />
+                  <div className="ws-gen-row">
+                    <span>{description.length} / 500</span>
+                    <button
+                      ref={generateRef}
+                      type="button"
+                      className="ds-btn ds-btn-secondary"
+                      onClick={generate}
+                      disabled={generating || !description.trim()}
+                    >
+                      <SparkleIcon size={17} />
+                      {generating ? "Generating…" : generated ? "Regenerate" : "Generate"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <span className="ds-muted" style={{ fontSize: 15 }}>
+                  Write the JSON below. Nothing is generated and no model runs.
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="ws-stack">
+            <label className="ds-kicker" htmlFor="new-endpoint-body">
+              {mode === "describe" && generated ? "Preview · edit anything before saving" : "Response body"}
+            </label>
+            {/* Keyed on each generation, so a fresh sample lands with a highlight. */}
             <textarea
-              className="textarea"
+              key={generated}
+              id="new-endpoint-body"
+              className={generated ? "ws-editor ws-editor-sm ws-flash" : "ws-editor ws-editor-sm"}
               rows={12}
               spellCheck={false}
               value={body}
+              aria-invalid={!bodyValid}
+              aria-busy={generating}
+              style={generating ? { opacity: 0.55 } : undefined}
               onChange={(e) => setBody(e.target.value)}
             />
-            {!bodyValid && (
-              <p className="small" style={{ color: "var(--client-err)", marginTop: 6 }}>
-                This isn&apos;t valid JSON yet.
-              </p>
-            )}
-            {note && (
-              <p className="small muted" style={{ marginTop: 6 }}>
-                {note}
-              </p>
-            )}
+            {!bodyValid && <span className="ws-alert" style={{ fontSize: 14 }}>This isn&apos;t valid JSON yet.</span>}
+            {note && <span className="ws-note">{note}</span>}
           </div>
 
           {error && (
-            <p className="small" style={{ color: "var(--server-err)", margin: 0 }}>
+            <p className="ws-alert ws-enter" role="alert">
               {error}
             </p>
           )}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flex: "none",
-            padding: "13px 20px",
-            borderTop: "1px solid var(--rule)",
-          }}
-        >
-          <code className="mono small muted" style={{ flex: "1 1 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {path.trim() ? `${method} ${path.trim()}` : ""}
+        <div className="ws-drawer-foot">
+          <code title={route?.ok ? `${method} ${origin}/m/${workspaceKey}${route.path}` : undefined}>
+            {route?.ok ? `${method} ${host}/m/${workspaceKey}${route.path}` : ""}
           </code>
-          <button className="btn" style={{ flex: "none" }} onClick={onClose}>
+          <button type="button" className="ds-btn ds-btn-secondary" onClick={exit}>
             Cancel
           </button>
           <button
-            className="btn btn-primary"
-            style={{ flex: "none" }}
+            type="button"
+            className="ds-btn ds-btn-primary"
             onClick={create}
-            disabled={saving || !bodyValid || !path.trim()}
+            disabled={saving || !bodyValid || !route?.ok}
           >
             {saving ? "Creating…" : "Create endpoint"}
           </button>
         </div>
       </div>
     </div>
-  );
-}
-
-function TabButton({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        appearance: "none",
-        background: "transparent",
-        border: 0,
-        borderBottom: `2px solid ${on ? "var(--accent)" : "transparent"}`,
-        color: on ? "var(--ink)" : "var(--ink-55)",
-        padding: "7px 10px",
-        marginBottom: -1,
-        cursor: "pointer",
-      }}
-    >
-      {children}
-    </button>
   );
 }

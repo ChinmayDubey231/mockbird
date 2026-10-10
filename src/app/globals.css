@@ -1,883 +1,2006 @@
 /* ---------------------------------------------------------------------------
-   Tokens.
+   The workspace: the workspace list, the endpoint dashboard, the request log
+   and settings. broadsheet.css holds the tokens and the shared pieces
+   (buttons, inputs, header, rail, dialogs); this file adds what the tool
+   needs on top, every class prefixed ws-.
 
-   The palette is the semantics of HTTP status codes. Status colour appears in
-   exactly three places — the log table, the status selector, and the failure
-   control — and nowhere else. Everything structural is ink on paper with
-   hairline rules.
+   The same rules as the home page: no boxes or dividers between sections,
+   whitespace separates them. Cyan is interaction and success, magenta is
+   errors and failures.
    --------------------------------------------------------------------------- */
 
-:root {
-  --bg: #f1eee9;
-  --surface: #fbfaf8;
-  --field: #ffffff;
-  --rule: #ddd9d2;
-  --rule-soft: #eae6e0;
-  --ink: #12161c;
-  --ink-rgb: 18, 22, 28;
-  --accent: #3b5bdb;
-  --accent-hi: #2a44b0;
-  --accent-rgb: 59, 91, 219;
-  --accent-2: #7c4fe0;
-  --accent-2-rgb: 124, 79, 224;
-  --ok: #1f7a4c;
-  --client-err: #b45309;
-  --client-err-rgb: 180, 83, 9;
-  --server-err: #b3261e;
-  --server-err-rgb: 179, 38, 30;
-  --code-bg: #12161c;
-  --code-fg: #e6e1d8;
-  --btn-bg: #12161c;
-  --btn-fg: #fbfaf8;
-  --btn-hi: #000000;
-  --scrim: rgba(18, 22, 28, 0.28);
-}
+/* --- chrome -------------------------------------------------------------- */
 
-[data-theme="dark"] {
-  --bg: #0e1116;
-  --surface: #16191f;
-  --field: #1c2027;
-  --rule: #2b313a;
-  --rule-soft: #232830;
-  --ink: #e9e5dd;
-  --ink-rgb: 233, 229, 221;
-  --accent: #93a9f7;
-  --accent-hi: #b6c5ff;
-  --accent-rgb: 147, 169, 247;
-  --accent-2: #b79bf5;
-  --accent-2-rgb: 183, 155, 245;
-  --ok: #55c58c;
-  --client-err: #e2a85c;
-  --client-err-rgb: 226, 168, 92;
-  --server-err: #f27f73;
-  --server-err-rgb: 242, 127, 115;
-  --code-bg: #090c10;
-  --code-fg: #d9d4ca;
-  --btn-bg: #e9e5dd;
-  --btn-fg: #0e1116;
-  --btn-hi: #ffffff;
-  --scrim: rgba(0, 0, 0, 0.5);
+/* The workspace header holds a crumb trail, so it never wraps: the trail
+   gives way first, then the base URL. */
+.ws-nav {
+  flex-wrap: nowrap;
+  gap: var(--space-3);
 }
-
-:root {
-  --ink-35: rgba(var(--ink-rgb), 0.38);
-  --ink-45: rgba(var(--ink-rgb), 0.5);
-  --ink-55: rgba(var(--ink-rgb), 0.62);
-  --ink-70: rgba(var(--ink-rgb), 0.8);
-  --tint: rgba(var(--ink-rgb), 0.04);
-  --accent-tint: rgba(var(--accent-rgb), 0.09);
-
-  --sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --radius: 4px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--sans);
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  /* .hero-bg's full-bleed trick sizes itself off 100vw, which in some
-     browsers includes the scrollbar's own width — this keeps that from
-     ever showing as a few px of horizontal scroll. */
-  overflow-x: hidden;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--accent-hi);
-  text-decoration: underline;
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* --- type ---------------------------------------------------------------- */
-
-.mono {
-  font-family: var(--mono);
-  font-size: 14.5px;
-}
-
-h1,
-h2,
-h3 {
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  margin: 0;
-}
-h1 {
-  font-size: 37px;
-  line-height: 1.15;
-}
-h2 {
-  font-size: 21px;
-}
-h3 {
-  font-size: 16px;
-}
-
-.muted {
-  color: var(--ink-55);
-}
-.small {
-  font-size: 13px;
-}
-
-.wordmark {
-  font-family: var(--mono);
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 17px;
-  color: var(--ink);
-}
-
-/* --- surfaces ------------------------------------------------------------ */
-
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-}
-
-.shell {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 16px 20px 64px;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  background: var(--surface);
-  border-bottom: 1px solid var(--rule);
-  padding: 12px 20px;
-}
-
-.mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: var(--accent);
+.ws-nav .ds-brand {
+  margin-right: 0;
   flex: none;
 }
-
-.topbar-base-url {
+.ws-crumb-sep {
   flex: none;
-  max-width: 220px;
+  color: var(--color-neutral-500);
+}
+.ds-nav a.ws-crumb {
+  flex: none;
+  white-space: nowrap;
+}
+.ws-crumb-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
+  font-size: 16px;
 }
-
-.base-url-pill {
-  display: inline-flex;
+.ws-spacer {
+  flex: 1;
+  min-width: 0;
+}
+.ws-base {
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   flex: none;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  padding: 4px 6px 4px 12px;
-  background: var(--field);
 }
-
+.ws-base code {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .ws-hide-md {
+    display: none !important;
+  }
+}
 @media (max-width: 640px) {
-  .topbar-base-url {
+  .ws-nav .ds-brand-name {
     display: none;
   }
-  .copy-btn-label {
-    display: none;
-  }
-  .base-url-pill {
-    padding: 6px;
-    border-radius: 8px;
-  }
-  /*
-   * At this width .hide-mobile has already dropped "How it works" and
-   * "Start free" — but the logo wordmark, "My workspaces" and the theme
-   * switch alone still don't fit in one row under ~380px, so the switch
-   * wraps onto its own line. Tightening padding/gap and the wordmark's
-   * letter-spacing (its biggest single cost at this size) claws back
-   * enough width to keep everything on one row down to ~340px.
-   */
-  .topbar {
-    padding: 12px 14px;
-    gap: 8px;
-  }
-  .wordmark {
-    font-size: 15px;
-    letter-spacing: 0.08em;
-  }
 }
 
-/* --- controls ------------------------------------------------------------ */
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
-
-.btn {
-  appearance: none;
-  border: 1px solid var(--rule);
-  background: var(--surface);
-  color: var(--ink);
-  border-radius: var(--radius);
-  padding: 6px 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease,
-    transform 150ms ease, box-shadow 200ms ease;
-}
-.btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-primary {
-  background: var(--btn-bg);
-  border-color: var(--btn-bg);
-  color: var(--btn-fg);
-  box-shadow: 0 2px 8px rgba(var(--ink-rgb), 0.14);
-}
-.btn-primary:hover:not(:disabled) {
-  background: var(--btn-hi);
-  border-color: var(--btn-hi);
-  color: var(--btn-fg);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(var(--ink-rgb), 0.22);
-}
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(var(--ink-rgb), 0.18);
-}
-.btn-danger:hover:not(:disabled) {
-  border-color: var(--server-err);
-  color: var(--server-err);
-}
-.btn-sm {
-  padding: 3px 8px;
-  font-size: 12px;
-}
-
-.input,
-.select,
-.textarea {
-  width: 100%;
-  background: var(--field);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: 7px 9px;
-}
-.input:focus,
-.select:focus,
-.textarea:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-.textarea {
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.range {
-  appearance: none;
-  width: 100%;
-  height: 2px;
-  background: var(--rule);
-  cursor: pointer;
-}
-.range::-webkit-slider-thumb {
-  appearance: none;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 0;
-}
-.range::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 0;
-}
-
-/* --- data surfaces: no radius, hairline rules, no shadow ----------------- */
-
-/*
- * A data table with several columns doesn't survive a narrow screen by
- * wrapping cell text — a path like "/orders/:id" with nowhere to break
- * ends up one letter per line. Scrolling the table horizontally instead
- * (min-width forces that rather than letting columns get crushed) keeps
- * every row readable; the container, not the cells, absorbs the overflow.
- */
-.table-scroll {
+.ws-tabs {
+  display: flex;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.table {
-  width: 100%;
-  min-width: 540px;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-/*
- * The endpoint dashboard's sidebar list. flex:0 0 236px is right on desktop
- * (a fixed rail beside the editor), but with no override it stays 236px
- * even once the flex row wraps to a single column on a narrow screen —
- * leaving the sidebar stranded at 236px with dead space beside it instead
- * of filling the row.
- */
-.endpoint-sidebar {
-  flex: 0 0 236px;
-  min-width: 220px;
-  border-right: 1px solid var(--rule);
-  padding-right: 16px;
-  align-self: stretch;
-}
-@media (max-width: 720px) {
-  .endpoint-sidebar {
-    flex: 1 1 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--rule);
-    padding-right: 0;
-    padding-bottom: 16px;
-  }
-}
-
-.table th {
-  text-align: left;
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--ink-45);
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--rule);
+  scrollbar-width: none;
   white-space: nowrap;
 }
-.table td {
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--rule-soft);
-  vertical-align: top;
+.ws-tabs::-webkit-scrollbar {
+  display: none;
 }
-.table tbody tr:hover {
-  background: var(--tint);
+@media (max-width: 400px) {
+  .ws-tabs {
+    gap: var(--space-3);
+  }
+}
+.ws-tab {
+  color: var(--color-neutral-700);
+  text-decoration: none;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 2px;
+  transition: color 180ms ease;
+}
+.ws-tab:hover {
+  color: var(--color-accent-700);
+}
+.ws-tab[data-active="true"] {
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration-line: underline;
 }
 
-.count-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--tint);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--ink-70);
+.ws-main {
+  padding-top: var(--space-8);
+  padding-bottom: calc(var(--space-8) * 2);
+  transition: opacity 200ms ease;
+}
+/* Where the browser has no View Transitions (PageTransitions sets this): the
+   page on screen steps back while a link's page is on its way, and the next
+   one arrives at the same strength and comes up to full. */
+:root[data-navigating] .ds-page .ws-main {
+  opacity: 0.5;
+  transition-duration: 120ms;
+}
+@media (max-width: 640px) {
+  .ws-main {
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+}
+.ws-footer {
+  padding-bottom: var(--space-8);
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+}
+.ws-footer-links {
+  display: flex;
+  gap: var(--space-4);
+}
+.ws-footer a {
+  color: var(--color-neutral-700);
+}
+.ws-footer a:hover {
+  color: var(--color-accent-700);
 }
 
-.code {
-  background: var(--code-bg);
-  color: var(--code-fg);
-  font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.65;
-  padding: 14px 16px;
-  overflow: auto;
-  white-space: pre;
+/* --- shared pieces ------------------------------------------------------- */
+
+.ds-page {
+  --skel-sheen: color-mix(in srgb, var(--color-bg) 75%, transparent);
+}
+[data-theme="dark"] .ds-page {
+  --skel-sheen: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+.ws-display {
+  font-size: clamp(40px, 4.6vw, 64px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+}
+.ws-lede {
+  margin-top: var(--space-3);
+  font-size: 18px;
+  max-width: 34em;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+.ws-note {
+  font-size: 14px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ws-empty {
+  max-width: 640px;
+}
+.ws-empty h2 {
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(30px, 3.4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -0.018em;
+}
+.ws-empty p {
+  margin-top: var(--space-3);
+  font-size: 19px;
+  text-wrap: pretty;
+}
+/* An empty page in two columns: the way in on the left, something to start
+   from on the right. Stacked once the columns would get narrow. */
+.ws-empty-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: var(--space-8) calc(var(--space-8) * 1.5);
+  align-items: start;
+}
+.ws-detail > .ws-empty-split {
+  padding-top: var(--space-6);
+}
+.ws-empty-base {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-8);
+}
+
+/* Example endpoints to start from: each row opens the form filled in. */
+.ws-examples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-examples ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
-
-.method {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--ink-55);
-}
-
-.status-ok {
-  color: var(--ok);
-}
-.status-client {
-  color: var(--client-err);
-}
-.status-server {
-  color: var(--server-err);
-}
-
-/* The one piece of motion in the product: a row landing in the log. */
-@keyframes rowflash {
-  from {
-    background: rgba(var(--accent-rgb), 0.16);
-  }
-  to {
-    background: transparent;
-  }
-}
-.flash {
-  animation: rowflash 900ms ease-out 1;
-}
-.flash-server {
-  animation: rowflash 900ms ease-out 1;
-  background: rgba(var(--server-err-rgb), 0.14);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .flash,
-  .flash-server {
-    animation: none;
-  }
-}
-
-/* --- landing page: hero decoration, badges, gradient text, card lift ----- */
-
-.hero {
-  position: relative;
-  isolation: isolate;
-}
-
-/*
- * Clips the decorative mesh/glow without putting overflow:hidden on .hero
- * itself. Chromium treats an overflow:hidden ancestor as a real (if
- * invisible) scroll container: anchoring to #demo — nested inside .hero —
- * made the browser scroll *inside* .hero as well as the page, clipping the
- * heading and leaving dead space at the bottom of the section.
- */
-.hero-bg {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  /* Full-bleed to the true viewport width rather than .hero's own box —
-     .hero sits inside main.shell (max-width: 1280px), so inset:0 here left
-     the glow/mesh unable to reach the screen edges past that width. */
-  left: 50%;
-  width: 100vw;
-  margin-left: -50vw;
-  overflow: hidden;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.hero-mesh {
-  position: absolute;
-  inset: -20% -10%;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    radial-gradient(480px circle at 12% 8%, rgba(var(--accent-rgb), 0.16), transparent 60%),
-    radial-gradient(420px circle at 82% 28%, rgba(var(--accent-2-rgb), 0.14), transparent 60%);
-  filter: blur(10px);
-}
-
-.hero-glow {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(
-    520px circle at var(--mx, 30%) var(--my, 10%),
-    rgba(var(--accent-2-rgb), 0.14),
-    transparent 65%
-  );
-}
-
-.badge-pill {
-  display: inline-flex;
+.ws-example {
+  appearance: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-3);
+  row-gap: 2px;
   align-items: center;
-  gap: 7px;
-  padding: 5px 12px 5px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--rule);
-  background: var(--surface);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-70);
+  width: 100%;
+  padding: 12px var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms ease;
 }
-
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ok);
+.ws-example:hover {
+  background: var(--color-accent-100);
+}
+.ws-example-route {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.ws-example-route .ds-method {
+  width: 44px;
   flex: none;
-  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.5);
-  animation: pulse-dot 2.2s ease-out infinite;
+}
+.ws-example-route code {
+  font-size: 15px;
+}
+.ws-example-text {
+  grid-column: 1;
+  padding-left: calc(44px + var(--space-2));
+  font-size: 15px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ws-example > svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--color-accent-700);
+  opacity: 0.4;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.ws-example:hover > svg,
+.ws-example:focus-visible > svg {
+  opacity: 1;
+  transform: translateX(2px);
 }
 
-@keyframes pulse-dot {
-  0% {
-    box-shadow: 0 0 0 0 rgba(31, 122, 76, 0.35);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(31, 122, 76, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(31, 122, 76, 0);
-  }
+/* The empty workspace list's walk-through. */
+.ws-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
-
-.gradient-text {
-  background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.ws-steps ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-
-.feature-card {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  padding: 18px 18px 20px;
-  box-sizing: border-box;
-  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+.ws-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
 }
-.feature-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(var(--accent-rgb), 0.4);
-  box-shadow: 0 10px 28px rgba(var(--ink-rgb), 0.08);
+.ws-step-num {
+  flex: none;
+  width: 1.1em;
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
-
-.feature-icon {
-  display: inline-flex;
+.ws-steps h3 {
+  font-size: 21px;
+}
+.ws-steps p {
+  margin-top: var(--space-1);
+  font-size: 16px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ws-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-6);
+}
+.ws-alert {
+  font-size: 15px;
+  color: var(--color-accent-2-700);
+}
+.ws-ok {
+  font-size: 15px;
+  color: var(--color-accent-700);
+}
+
+/* A status dot: cyan for success, magenta for an error, grey when idle. */
+.ws-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  transition: background-color 300ms ease;
+}
+.ws-dot[data-tone="bad"] {
+  background: var(--color-accent-2);
+}
+.ws-dot[data-tone="off"] {
+  background: var(--color-neutral-400);
+}
+.ws-dot-round {
+  border-radius: 50%;
+}
+
+/* A big serif figure with its label, for counts and settings. */
+.ws-figure-num {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ws-figure-num[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+
+/* A copy button: its icon swaps for a tick that lands with a small pop. */
+.ws-copy-icon {
+  display: inline-flex;
+}
+.ws-copy-only {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-2-rgb), 0.14));
-  color: var(--accent);
-  margin-bottom: 12px;
 }
 
-.theme-switch {
-  position: relative;
-  flex: none;
-  width: 52px;
-  height: 26px;
-  padding: 0;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  background: var(--field);
-  cursor: pointer;
-  transition: border-color 220ms ease;
-}
-.theme-switch:hover {
-  border-color: var(--accent);
-}
-.theme-switch-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--ink);
-  transition: transform 340ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.theme-switch-icon {
-  position: absolute;
-  top: 7px;
-  pointer-events: none;
-  transition: opacity 220ms ease;
-}
-.theme-switch-moon {
-  left: 7px;
-}
-.theme-switch-sun {
-  right: 6.5px;
-  top: 6.5px;
-}
-
-.active-switch {
-  position: relative;
-  flex: none;
-  width: 38px;
-  height: 20px;
-  padding: 0;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  background: var(--field);
-  cursor: pointer;
-  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
-}
-.active-switch:hover {
-  border-color: var(--accent);
-}
-.active-switch:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.active-switch.is-on {
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
-}
-.active-switch-knob {
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--ink);
-  box-shadow: 0 1px 3px rgba(var(--ink-rgb), 0.35);
-  transition: transform 340ms cubic-bezier(0.4, 0, 0.2, 1), background-color 220ms ease;
-}
-.active-switch.is-on .active-switch-knob {
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-switch-knob,
-  .active-switch-knob {
-    transition: none;
-  }
-}
-
-.demo-frame {
-  position: relative;
-  border-radius: 12px;
-  padding: 1.5px;
-  background: linear-gradient(120deg, rgba(var(--accent-rgb), 0.55), rgba(var(--accent-2-rgb), 0.5));
-}
-.demo-frame > .demo-inner {
-  background: var(--surface);
-  border-radius: 11px;
-  padding: 18px 18px 6px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .badge-dot {
-    animation: none;
-  }
-  .feature-card {
-    transition: none;
-  }
-}
-
-/* --- landing page: nav links, route marquee, state mini-visuals ---------- */
-
-.nav-link {
+/* The code wells: a surface block in the mono. */
+.ws-code {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
   font-size: 13px;
-  color: var(--ink-55);
+  line-height: 1.65;
+  white-space: pre;
+  transition: background-color 240ms ease;
+}
+
+/* --- the workspace list -------------------------------------------------- */
+
+.ws-index-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-8);
+}
+.ws-index-head > div {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.ws-index-title {
+  font-size: clamp(44px, 5.4vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+.ws-index-head .ws-lede {
+  margin-top: var(--space-4);
+  font-size: clamp(18px, 1.45vw, 21px);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+.ws-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+}
+.ws-index-toolbar {
+  margin-top: calc(var(--space-8) * 1.25);
+}
+.ws-summary {
+  font-size: 15px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+/* Not a scroll container: the table fits at every width where it's a
+   table, and on a phone it's stacked cards. As one, it would flash a
+   scrollbar while its rows slide up into place on load. */
+.ws-table-wrap {
+  margin-top: var(--space-4);
+}
+.ws-index-table {
+  min-width: 600px;
+  font-size: 16px;
+}
+.ws-index-table th:first-child,
+.ws-index-table td:first-child {
+  padding-left: 0;
+}
+.ws-index-table th:last-child,
+.ws-index-table td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+.ws-index-table td {
+  vertical-align: top;
+}
+.ws-index-table tbody tr {
+  transition: background-color 180ms ease;
+}
+.ws-index-table tbody tr:hover {
+  background: var(--color-neutral-100);
+}
+.ws-index-name {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: color 180ms ease;
+}
+.ws-index-name:hover {
+  color: var(--color-accent-700);
+}
+.ws-index-base {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  overflow-wrap: anywhere;
+}
+.ws-index-key {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   white-space: nowrap;
 }
-.nav-link:hover {
-  color: var(--ink);
-  text-decoration: none;
+.ws-index-key code {
+  font-size: 15px;
 }
-
-/*
- * The landing header has four right-side items (two nav links, the theme
- * switch, a CTA button) — fine on desktop, but wrapping onto a second row
- * on a phone splits them asymmetrically (one item stranded top-right,
- * the rest crowded below). Dropping the two lower-priority ones (an
- * anchor scroll to content already one scroll away, and a CTA that
- * duplicates it) keeps "My workspaces" and the theme switch on one row.
- */
-@media (max-width: 640px) {
-  .hide-mobile {
-    display: none;
-  }
-}
-
-.route-marquee {
-  position: relative;
-  overflow: hidden;
-  padding: 14px 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.route-marquee-track {
+.ws-index-life {
   display: flex;
-  width: max-content;
-  gap: 10px;
-  animation: marquee-scroll 38s linear infinite;
-}
-.route-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-  border: 1px solid var(--rule-soft);
-  border-radius: 999px;
-  padding: 5px 12px;
-  background: var(--field);
-}
-@keyframes marquee-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.state-progress {
-  position: relative;
-  height: 3px;
-  background: var(--rule);
-  border-radius: 2px;
-}
-.state-progress-dot {
-  position: absolute;
-  top: -3px;
-  width: 9px;
-  height: 9px;
-  margin-left: -4px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: travel-dot 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-}
-@keyframes travel-dot {
-  0% {
-    left: 0%;
-  }
-  55% {
-    left: 100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-.state-bars {
-  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
-  align-items: flex-end;
-  height: 22px;
+  font-size: 14px;
 }
-.state-bar {
-  flex: 1;
-  height: 22px;
-  border-radius: 1px;
-  background: var(--ok);
-  opacity: 0.75;
+.ws-index-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-.state-bar-fail {
-  background: var(--server-err);
-  opacity: 1;
-  animation: bar-flicker 3.4s ease-in-out infinite;
+.ws-index-unit {
+  display: none;
 }
-@keyframes bar-flicker {
-  0%,
-  72% {
-    opacity: 1;
+/* On a phone each workspace is a stacked card rather than a table row:
+   name and base URL, then key and endpoint count, then lifetime and Open. */
+@media (max-width: 720px) {
+  .ws-index-table {
+    min-width: 0;
   }
-  76%,
-  84% {
-    opacity: 0.25;
+  .ws-index-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
   }
-  88%,
-  100% {
-    opacity: 1;
+  .ws-index-table tbody {
+    display: block;
+  }
+  .ws-index-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+  .ws-index-table tbody tr:hover {
+    background: none;
+  }
+  .ws-index-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .ws-index-table td:first-child {
+    grid-column: 1 / -1;
+  }
+  .ws-index-table td:last-child {
+    align-self: end;
+  }
+  .ws-index-unit {
+    display: inline;
+  }
+  .ws-index-count {
+    color: var(--color-neutral-700);
+    font-size: 15px;
+  }
+  .ws-index-life {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-2);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .route-marquee-track,
-  .state-progress-dot,
-  .state-bar-fail {
-    animation: none;
-  }
+.ws-index-new {
+  animation: ws-row-in 1800ms ease-out;
 }
-
-/* --- modals ---------------------------------------------------------- */
-
-.modal-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: var(--scrim);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: modal-scrim-in 160ms ease;
-}
-
-.modal-card {
-  width: min(440px, 100%);
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  padding: 24px;
-  box-shadow: 0 24px 60px rgba(var(--ink-rgb), 0.28);
-  animation: modal-card-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.modal-card h2 {
-  font-size: 18px;
-}
-.modal-card p {
-  margin: 10px 0 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--ink-55);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 24px;
-}
-
-@keyframes modal-scrim-in {
-  from {
+@keyframes ws-row-in {
+  0% {
+    background-color: var(--color-accent-100);
     opacity: 0;
+    transform: translateY(-6px);
   }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes modal-card-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(4px);
-  }
-  to {
+  30% {
+    background-color: var(--color-accent-100);
     opacity: 1;
     transform: none;
   }
 }
+.ws-preview-url {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  overflow-wrap: anywhere;
+}
 
+/* --- the endpoint dashboard ---------------------------------------------- */
+
+.ws-dash {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+.ws-side {
+  flex: 0 1 290px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+/* Side by side, the list stays in view while a long endpoint scrolls past. */
+@media (min-width: 960px) {
+  .ws-side {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-bottom: var(--space-4);
+  }
+}
+/* Stacked, the endpoint comes straight after the list it was picked from,
+   and the traffic figures move below it: the sidebar's own box dissolves so
+   its pieces can be ordered around the endpoint. */
+@media (max-width: 959px) {
+  .ws-dash {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+  .ws-side {
+    display: contents;
+  }
+  .ws-dash > .ws-detail {
+    order: 1;
+    flex-basis: auto;
+    margin-top: var(--space-4);
+  }
+  .ws-side > .ws-side-block {
+    order: 2;
+    margin-top: var(--space-4);
+  }
+}
+/* Between phone and desktop, a full-width button would stretch to a bar. */
+@media (min-width: 641px) and (max-width: 959px) {
+  .ws-side > .ds-btn-block {
+    align-self: flex-start;
+    width: auto;
+  }
+}
+.ws-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ws-side-list > .ds-kicker {
+  margin-bottom: var(--space-1);
+}
+.ws-ep {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 10px var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms ease, opacity 180ms ease;
+}
+.ws-ep:hover {
+  background: var(--color-neutral-100);
+}
+.ws-ep[aria-current="true"] {
+  background: var(--color-accent-100);
+}
+.ws-ep[data-inactive="true"] {
+  opacity: 0.55;
+}
+.ws-ep .ds-method {
+  width: 56px;
+  flex: none;
+}
+.ws-ep code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.ws-ep-spec {
+  flex: none;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+.ws-side-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-side-block + .ws-side-block {
+  margin-top: var(--space-2);
+}
+.ws-count-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.ws-count-line > span:last-child {
+  font-size: 15px;
+  color: var(--color-neutral-700);
+}
+.ws-hours {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 44px;
+}
+.ws-hours > span {
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-300);
+  transition: height 300ms ease, background-color 300ms ease;
+}
+.ws-hours > span[data-on="true"] {
+  background: var(--color-neutral-500);
+}
+.ws-hours > span[data-now="true"] {
+  background: var(--color-accent);
+}
+.ws-hours-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+.ws-recent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 0;
+  font-size: 14px;
+}
+.ws-recent code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.ws-recent > span:last-child {
+  flex: none;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+.ws-status-ink {
+  font-variant-numeric: tabular-nums;
+}
+.ws-status-ink[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+
+/* The open endpoint. */
+.ws-detail {
+  flex: 1 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.ws-detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.ws-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2) var(--space-6);
+}
+.ws-title {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.ws-title-method {
+  flex: none;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.ws-title code {
+  min-width: 0;
+  font-weight: 500;
+  font-size: clamp(26px, 3.6vw, 48px);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.ws-title-side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+}
+/* Wrapped under the path, the switch leads and "Saved" follows it. */
+@media (max-width: 640px) {
+  .ws-title-side {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .ws-title-side .ws-save {
+    min-width: 0;
+    text-align: left;
+  }
+}
+.ws-save {
+  min-width: 4.5em;
+  text-align: right;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+  transition: opacity 300ms ease;
+}
+.ws-save:empty {
+  opacity: 0;
+}
+.ws-save[data-state="error"] {
+  color: var(--color-accent-2-700);
+}
+.ws-spec-note {
+  font-size: 16px;
+  color: var(--color-neutral-700);
+}
+.ws-url-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+}
+.ws-url-row code {
+  flex: 1 1 300px;
+  min-width: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.ws-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* An on/off switch: a cyan track when on. */
+.ws-switch {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.ws-switch-track {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-neutral-300);
+  transition: background-color 220ms ease;
+}
+.ws-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ws-switch[aria-checked="true"] .ws-switch-track {
+  background: var(--color-accent);
+}
+.ws-switch[aria-checked="true"] .ws-switch-track::after {
+  transform: translateX(20px);
+}
+
+/* The response body editor. */
+.ws-field-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.ws-field-head > span {
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-editor {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  tab-size: 2;
+  outline: none;
+  transition: border-color 180ms ease, background-color 240ms ease, opacity 200ms ease;
+}
+.ws-editor:focus-visible {
+  border-color: var(--color-accent);
+}
+.ws-editor[aria-invalid="true"] {
+  border-color: var(--color-accent-2);
+}
+.ws-editor-sm {
+  min-height: 0;
+  padding: var(--space-3);
+  font-size: 13.5px;
+}
+.ws-field-note {
+  margin-top: var(--space-2);
+  font-size: 15px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ws-field-note code {
+  font-size: 0.88em;
+  color: var(--color-accent-700);
+}
+.ws-field-note[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+
+/* Status, delay and failure: a figure on the left, the controls beside it. */
+.ws-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.ws-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+}
+.ws-control-figure {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+/* On a phone the figure reads across one line: the number, then its note. */
+@media (max-width: 640px) {
+  .ws-control {
+    gap: var(--space-3);
+  }
+  .ws-control-figure {
+    flex-basis: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-3);
+  }
+  .ws-control-figure > :first-child {
+    flex-basis: 100%;
+  }
+  .ws-big {
+    font-size: 36px;
+  }
+}
+.ws-control-figure > label,
+.ws-control-figure > .ds-kicker {
+  font-size: 13px;
+}
+.ws-big {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: color 220ms ease;
+}
+.ws-big[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+.ws-big small {
+  font-size: 22px;
+  font-weight: 400;
+  margin-left: 3px;
+}
+.ws-control-figure > span:last-child {
+  font-size: 16px;
+  color: var(--color-neutral-800);
+}
+.ws-control-body {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+.ws-chips > span:first-child {
+  width: 84px;
+  flex: none;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+@media (max-width: 640px) {
+  .ws-chips > span:first-child {
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+}
+.ws-chip {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 5px 10px;
+  font-variant-numeric: tabular-nums;
+}
+.ws-range {
+  width: 100%;
+  min-height: 36px;
+  margin: 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+.ws-range[data-tone="bad"] {
+  accent-color: var(--color-accent-2);
+}
+.ws-range-scale {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 2px;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+.ws-range + .ws-range-scale,
+.ws-skel-track + .ws-range-scale {
+  margin-top: calc(var(--space-1) * -1);
+}
+.ws-range-scale + .ws-chips {
+  margin-top: var(--space-1);
+}
+
+/* The next twenty calls, as the settings above make them. */
+.ws-spread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-spread-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.ws-spread-head > span:last-child {
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-cells {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 3px;
+}
+.ws-cells > span {
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-300);
+  transition: background-color 300ms ease;
+}
+.ws-cells[data-tone="bad"] > span {
+  background: var(--color-accent-2-300);
+}
+.ws-cells > span[data-fail="true"] {
+  background: var(--color-accent-2);
+}
+.ws-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-6);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.ws-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ws-swatch {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-300);
+}
+.ws-swatch[data-tone="soft-bad"] {
+  background: var(--color-accent-2-300);
+}
+.ws-swatch[data-tone="bad"] {
+  background: var(--color-accent-2);
+}
+
+/* Send a test request, and its answer. */
+.ws-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.ws-actions > code {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  overflow-wrap: anywhere;
+}
+.ws-test {
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  transition: background-color 240ms ease;
+}
+.ws-test-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-2);
+}
+.ws-test-head > span:last-child {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-test pre {
+  margin: 0;
+  max-height: 300px;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  transition: opacity 200ms ease;
+}
+.ws-test[aria-busy="true"] pre {
+  opacity: 0.45;
+}
+
+/* --- the new-endpoint drawer --------------------------------------------- */
+
+.ws-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.ws-drawer {
+  width: min(580px, 100%);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  box-shadow: var(--shadow-lg);
+}
+.ws-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+}
+.ws-drawer-head h2 {
+  flex: 1;
+  font-size: 30px;
+}
+.ws-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-2) var(--space-6) var(--space-6);
+}
+.ws-drawer-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: 0 -1px 0 var(--color-divider);
+}
+.ws-drawer-foot > code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+@media (max-width: 640px) {
+  .ws-drawer-head,
+  .ws-drawer-body,
+  .ws-drawer-foot {
+    padding-inline: var(--space-4);
+  }
+  .ws-drawer-foot > code {
+    display: none;
+  }
+  .ws-drawer-foot {
+    justify-content: flex-end;
+  }
+}
+.ws-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-stack-lg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.ws-route-input {
+  display: flex;
+  gap: var(--space-2);
+}
+.ws-route-input select {
+  width: 120px;
+  flex: none;
+}
+.ws-route-input .ds-input {
+  min-height: 46px;
+}
+.ws-gen-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ws-gen-row > span {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the request log ----------------------------------------------------- */
+
+.ws-log-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-6) var(--space-8);
+}
+.ws-log-head > div:first-child {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+.ws-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+}
+@media (max-width: 640px) {
+  .ws-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+}
+.ws-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.ws-stat > span:last-child {
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+/* A figure that filters the list to what it counts. */
+.ws-stat-button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ws-stat-button > span:last-child {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 3px;
+  transition: color 180ms ease;
+}
+.ws-stat-button:hover > span:last-child {
+  color: var(--color-accent-700);
+}
+/* Five filters are wider than a phone: the row scrolls sideways instead. */
+@media (max-width: 640px) {
+  .ws-log-toolbar .ds-seg {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ws-log-toolbar .ds-seg::-webkit-scrollbar {
+    display: none;
+  }
+}
+.ws-log-toolbar {
+  margin-top: var(--space-8);
+  gap: var(--space-3) var(--space-4);
+}
+.ws-log-toolbar .ds-input {
+  flex: 1 1 220px;
+  max-width: 340px;
+  min-height: 42px;
+  width: auto;
+}
+@media (max-width: 640px) {
+  .ws-log-toolbar .ds-input {
+    order: 1;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .ws-log-toolbar > span:empty {
+    display: none;
+  }
+}
+.ws-log-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+}
+.ws-log-list {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ws-log-grid {
+  display: grid;
+  grid-template-columns: 52px 60px minmax(0, 1fr) 76px 64px;
+  gap: var(--space-2);
+  align-items: center;
+}
+.ws-log-cols {
+  padding: var(--space-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ws-log-cols > span:nth-child(n + 4),
+.ws-log-row > span:nth-child(n + 4) {
+  text-align: right;
+}
+.ws-log-row {
+  appearance: none;
+  width: 100%;
+  padding: 9px var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+.ws-log-row:hover {
+  background: var(--color-neutral-100);
+}
+.ws-log-row[aria-current="true"] {
+  background: var(--color-accent-100);
+}
+.ws-log-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.ws-log-status[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+.ws-log-path {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.ws-log-path code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+}
+.ws-log-tag {
+  flex: none;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--color-neutral-700);
+}
+.ws-log-tag[data-tone="bad"] {
+  color: var(--color-accent-2-700);
+}
+.ws-log-ms {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800);
+}
+.ws-log-ago {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+.ws-log-more {
+  margin: var(--space-3) var(--space-2) 0;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+/* On a phone: no "when" column, and a row's tag drops under its path so
+   the path keeps the width. */
+@media (max-width: 640px) {
+  .ws-log-grid {
+    grid-template-columns: 44px 58px minmax(0, 1fr) 58px;
+  }
+  .ws-log-grid > span:nth-child(5) {
+    display: none;
+  }
+  .ws-log-row {
+    font-size: 14px;
+    align-items: baseline;
+  }
+  .ws-log-path {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .ws-log-path code {
+    max-width: 100%;
+  }
+}
+
+/* Below the side-by-side width, an entry opens in the list, under its row. */
+.ws-log-inline {
+  padding: var(--space-3) var(--space-2) var(--space-6);
+}
+.ws-log-inline + .ws-log-row {
+  margin-top: var(--space-2);
+}
+
+/* The selected request, in full. */
+.ws-log-detail {
+  flex: 1 1 480px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.ws-log-detail.ws-log-inline {
+  gap: var(--space-4);
+}
+@media (min-width: 1000px) {
+  .ws-log-detail {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-bottom: var(--space-4);
+  }
+}
+.ws-ld-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.ws-ld-title > span {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.ws-ld-title code {
+  min-width: 0;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.ws-ld-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.ws-ld-line .ws-log-status {
+  gap: 7px;
+  font-weight: 600;
+}
+.ws-ld-line .ws-dot {
+  width: 9px;
+  height: 9px;
+}
+.ws-ld-explain {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 16px;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+.ws-ld-explain > svg {
+  position: relative;
+  top: 2px;
+  color: var(--color-accent-700);
+}
+.ws-ld-explain[data-tone="bad"] > svg {
+  color: var(--color-accent-2-700);
+}
+.ws-timing {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-200);
+}
+.ws-timing > span {
+  transition: width 300ms var(--ease-out);
+}
+.ws-timing > span:first-child {
+  background: var(--color-accent-300);
+}
+.ws-timing > span:last-child {
+  background: var(--color-accent);
+}
+.ws-timing[data-tone="bad"] > span:last-child {
+  background: var(--color-accent-2);
+}
+.ws-timing-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-6);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800);
+}
+.ws-timing-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ws-timing-legend .ws-swatch {
+  width: 10px;
+  height: 10px;
+}
+.ws-timing-legend .ws-swatch[data-tone="work"] {
+  background: var(--color-accent);
+}
+.ws-timing-legend .ws-swatch[data-tone="bad"] {
+  background: var(--color-accent-2);
+}
+.ws-kv td {
+  vertical-align: top;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.ws-kv td:first-child {
+  width: 34%;
+  padding-left: 0;
+  color: var(--color-neutral-700);
+}
+.ws-kv td:first-child[data-tone="accent"] {
+  color: var(--color-accent-700);
+}
+.ws-kv td:last-child {
+  padding-right: 0;
+}
+.ws-ld-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-ld-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.ws-ld-section-head > span:last-child {
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+
+/* --- settings ------------------------------------------------------------ */
+
+/* A ledger: each setting is a row, what it is on the left and its controls
+   on the right, in groups under small-capitals heads. */
+.ws-settings {
+  max-width: 1120px;
+}
+.ws-set-group {
+  margin-top: calc(var(--space-8) * 1.5);
+}
+/* The group's head carries a hairline, as a table's head row does. */
+.ws-set-kicker {
+  margin: 0 0 var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+.ws-set-group[data-tone="danger"] .ws-set-kicker {
+  color: var(--color-accent-2-700);
+}
+.ws-set-row {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-8);
+  align-items: start;
+  padding-block: var(--space-4);
+}
+.ws-set-label p {
+  margin-top: var(--space-1);
+  font-size: 15px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ws-set-title {
+  display: block;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.ws-set-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+/* Stacked on a narrow screen: the label, then its controls. */
+@media (max-width: 760px) {
+  .ws-set-group {
+    margin-top: var(--space-8);
+  }
+  .ws-set-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+.ws-name-row {
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+}
+.ws-name-row .ds-input {
+  flex: 1;
+}
+.ws-field-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 520px;
+  min-height: 1.5em;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-field-meta .ws-save {
+  min-width: 0;
+  text-align: left;
+}
+.ws-field-meta > .ds-num {
+  flex: none;
+  white-space: nowrap;
+}
+.ws-name-row .ds-input[aria-invalid="true"] {
+  border-color: var(--color-accent-2);
+}
+.ws-field-meta .ws-alert {
+  font-size: 14px;
+}
+
+/* A value in a surface well, with its copy button. */
+.ws-well {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  transition: background-color 240ms ease;
+}
+.ws-well code {
+  min-width: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.ws-well-example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  max-width: 100%;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+}
+.ws-well-example .ds-kicker {
+  font-size: 12px;
+}
+.ws-well-example code {
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.ws-key-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.ws-key {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.ws-file-name {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+.ws-life-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: 16px;
+}
+
+/* The import target: drop a file on it, or click it to choose one. */
+.ws-drop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 520px;
+  padding: var(--space-4);
+  border: 1px dashed color-mix(in srgb, var(--color-text) 30%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-700);
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+.ws-drop:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+.ws-drop[data-dragging="true"] {
+  border-style: solid;
+  border-color: var(--color-accent);
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
+}
+.ws-drop[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.7;
+}
+.ws-drop:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.ws-drop svg {
+  color: var(--color-accent-700);
+}
+.ws-drop-pick {
+  color: var(--color-accent-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ws-notice-list {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
+  font-size: 14px;
+}
+
+.ds-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --- not found ----------------------------------------------------------- */
+
+.ws-lost {
+  max-width: 640px;
+  padding-top: var(--space-6);
+}
+.ws-lost h1 {
+  margin-top: var(--space-2);
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+.ws-lost-em {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.ws-lost p {
+  margin-top: var(--space-4);
+  font-size: 19px;
+  text-wrap: pretty;
+}
+.ws-lost .ds-btn {
+  margin-top: var(--space-6);
+}
+
+/* --- loading ------------------------------------------------------------- */
+
+/* A placeholder block: an input, a button, the editor. */
+.ws-skel {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+/* A placeholder line of text. It sits inside an element with the real type,
+   so it takes exactly the height of the line that replaces it: a bar the
+   height of the letters, centred in the line box. */
+.ws-skel-line {
+  display: block;
+  height: 0.7em;
+  margin-block: calc((1lh - 0.7em) / 2);
+  border-radius: var(--radius-sm);
+}
+/* In a right-aligned column, a placeholder line keeps to the right too. */
+.ws-log-grid > span:nth-child(n + 4) > .ws-skel-line,
+.ws-index-count > .ws-skel-line {
+  margin-left: auto;
+}
+/* Placeholder rows are not things to point at. */
+.ws-loading .ws-ep,
+.ws-loading .ws-log-row,
+.ws-loading tbody tr {
+  cursor: default;
+}
+.ws-loading .ws-ep:hover,
+.ws-loading .ws-log-row:hover,
+.ws-loading tbody tr:hover {
+  background: none;
+}
+/* The page's fixed labels, shown for real while the data behind them loads. */
+.ws-loading .ws-skel-label {
+  color: var(--color-neutral-600);
+}
+/* The slider's track, as a thin rule in the control's height. */
+.ws-skel-track {
+  display: flex;
+  align-items: center;
+  height: 36px;
+}
+.ws-skel-track > .ws-skel {
+  width: 100%;
+  height: 4px;
+}
+/* Below the side-by-side width the log has no detail column to stand in for. */
+@media (max-width: 999px) {
+  .ws-log-detail.ws-skel-detail {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion.
+
+   Nothing moves when a page arrives: its skeleton is drawn to the same
+   layout, so the content simply takes its place. Motion answers what the
+   person does. An endpoint or log entry they pick fades in; a test result,
+   a message or a new row rises into place; the drawer slides in from the
+   right and back out before it unmounts. Entrances use fill-mode backwards,
+   so nothing is left holding a transform once it lands, since a transform on
+   an ancestor would trap the drawer's position: fixed.
+   --------------------------------------------------------------------------- */
+
+@keyframes ws-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes ws-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ws-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ws-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+@keyframes ws-drawer-out {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+@keyframes ws-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+@keyframes ws-highlight {
+  from {
+    background-color: var(--color-accent-200);
+  }
+}
+/* One sheen sweeps across every placeholder at once: the gradient is fixed
+   to the viewport, so each block shows its slice of the same band. */
+@keyframes ws-sheen {
+  from {
+    background-position: 100vw 0;
+  }
+  to {
+    background-position: -100vw 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ws-enter {
+    animation: ws-rise 360ms var(--ease-out) backwards;
+  }
+  .ws-swap {
+    animation: ws-fade 260ms ease backwards;
+  }
+  .ws-scrim {
+    animation: ws-fade 260ms ease backwards;
+  }
+  .ws-drawer {
+    animation: ws-drawer-in 300ms var(--ease-out) backwards;
+  }
+  .ws-scrim[data-exiting="true"] {
+    animation: ws-fade-out 220ms ease forwards;
+  }
+  .ws-scrim[data-exiting="true"] .ws-drawer {
+    animation: ws-drawer-out 220ms ease-in forwards;
+  }
+  .ws-copy[data-state="done"] .ws-copy-icon {
+    animation: ws-pop 320ms var(--ease-out);
+  }
+  .ws-flash {
+    animation: ws-highlight 1600ms ease-out;
+  }
+  /* Held back a beat, so a fast navigation never flashes it. */
+  .ws-loading {
+    animation: ws-fade 300ms ease 140ms backwards;
+  }
+  .ws-skel {
+    background-image: linear-gradient(
+      100deg,
+      transparent 35%,
+      var(--skel-sheen) 50%,
+      transparent 65%
+    );
+    background-size: 100vw 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: ws-sheen 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+/* A page change, where the browser has View Transitions: the old page fades
+   out as the new one fades in over it. Unhurried, so it reads as a dissolve
+   rather than a blink. The day/night toggle cross-fades the same way, at
+   its own length. */
+:root[data-page-transition]::view-transition-old(root),
+:root[data-page-transition]::view-transition-new(root) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Everything that moves stands still when asked to. */
 @media (prefers-reduced-motion: reduce) {
-  .modal-scrim,
-  .modal-card {
-    animation: none;
+  .ds-page *,
+  .ds-page *::before,
+  .ds-page *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }

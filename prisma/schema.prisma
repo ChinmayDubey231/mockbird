@@ -76,9 +76,15 @@ model RequestLog {
   body       Json?
   statusCode Int
   durationMs Int
+  delayMs    Int      @default(0) // the configured delay this call waited out
   matched    Boolean
   note       String? // "injected failure", "did you mean /orders?"
-  createdAt  DateTime @default(now())
+
+  // What went back: the body as sent, cut to its first few KB, and its full size.
+  responseBody String?
+  responseSize Int     @default(0)
+
+  createdAt DateTime @default(now())
 
   @@index([workspaceId, createdAt])
 }

@@ -1,0 +1,66 @@
+/* ---------------------------------------------------------------------------
+   Base styles for the home page, the ones broadsheet.css builds on.
+
+   They used to apply to every page. Since the workspace pages moved to the
+   design system in design-system.css, each rule here is fenced to the home
+   page with :where(.bs-page), which adds no specificity, so the home page
+   resolves exactly as it did before.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --color-danger: #bf1f62;
+  --color-danger-hover: #9b164f;
+  --color-on-danger: #ffffff;
+  --scrim: color-mix(in srgb, #1c1a19 34%, transparent);
+
+  --ease-out: cubic-bezier(0.22, 0.7, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+[data-theme="dark"] {
+  --color-danger: #ff458e;
+  --color-danger-hover: #ff90b1;
+  --color-on-danger: #1f0d14;
+  --scrim: color-mix(in srgb, #000 58%, transparent);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body:where(:has(.bs-page)) {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* A guard: no page should scroll sideways, and anything sized off 100vw
+     would, since in some browsers 100vw includes the scrollbar's width. */
+  overflow-x: hidden;
+}
+
+:where(.bs-page) a {
+  color: var(--color-accent-700);
+  text-decoration: none;
+}
+:where(.bs-page) a:hover {
+  color: var(--color-accent-800);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:where(.bs-page) :focus-visible {
+  outline: 2px solid var(--color-accent-600);
+  outline-offset: 2px;
+}
+
+:where(.bs-page) :is(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}

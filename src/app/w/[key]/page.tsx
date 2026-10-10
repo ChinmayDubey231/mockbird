@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { appOrigin, workspaceForViewer } from "@/lib/workspace";
-import { Dashboard, type EndpointDTO } from "@/components/Dashboard";
+import { Dashboard, type Activity, type EndpointDTO } from "@/components/Dashboard";
 
 export const dynamic = "force-dynamic";
+
+const HOUR = 3600e3;
 
 // A page.tsx sharing its segment with layout.tsx has its metadata replace
 // the layout's outright rather than fill the layout's title template (that
@@ -21,36 +23,64 @@ export async function generateMetadata({ params }: { params: { key: string } }):
   return { title: { absolute: title } };
 }
 
-export default async function WorkspacePage({ params }: { params: { key: string } }) {
+export default async function WorkspacePage({
+  params,
+  searchParams,
+}: {
+  params: { key: string };
+  searchParams: { endpoint?: string };
+}) {
   const workspace = await workspaceForViewer(params.key);
   if (!workspace) notFound();
 
-  const rows = await prisma.endpoint.findMany({
-    where: { workspaceId: workspace.id },
-    orderBy: [{ path: "asc" }, { method: "asc" }],
-  });
+  const now = Date.now();
+  const [rows, lastDay, latest] = await Promise.all([
+    prisma.endpoint.findMany({
+      where: { workspaceId: workspace.id },
+      orderBy: [{ path: "asc" }, { method: "asc" }],
+    }),
+    // The log keeps at most 500 rows, so a day of it is a small read.
+    prisma.requestLog.findMany({
+      where: { workspaceId: workspace.id, createdAt: { gte: new Date(now - 24 * HOUR) } },
+      select: { createdAt: true },
+    }),
+    prisma.requestLog.findMany({
+      where: { workspaceId: workspace.id },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { method: true, path: true, statusCode: true, createdAt: true },
+    }),
+  ]);
 
   const endpoints: EndpointDTO[] = rows.map((e) => ({
     id: e.id,
     method: e.method,
     path: e.path,
-    description: e.description,
     responseBody: JSON.stringify(e.responseBody, null, 2),
     statusCode: e.statusCode,
     delayMs: e.delayMs,
     failureRate: e.failureRate,
     failureStatus: e.failureStatus,
     isActive: e.isActive,
-    hitCount: e.hitCount,
     specificity: e.specificity,
   }));
 
-  const requestsToday = await prisma.requestLog.count({
-    where: {
-      workspaceId: workspace.id,
-      createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-    },
-  });
+  // Hour by hour, oldest first, so the last bar is the hour now running.
+  const hours = Array.from({ length: 24 }, () => 0);
+  for (const log of lastDay) {
+    const ago = Math.floor((now - log.createdAt.getTime()) / HOUR);
+    if (ago >= 0 && ago < 24) hours[23 - ago]++;
+  }
+
+  const activity: Activity = {
+    hours,
+    recent: latest.map((l) => ({
+      method: l.method,
+      path: l.path,
+      status: l.statusCode,
+      at: l.createdAt.toISOString(),
+    })),
+  };
 
   return (
     <Dashboard
@@ -58,7 +88,9 @@ export default async function WorkspacePage({ params }: { params: { key: string 
       workspaceKey={workspace.key}
       origin={appOrigin()}
       initialEndpoints={endpoints}
-      requestsToday={requestsToday}
+      initialActivity={activity}
+      initialSelectedId={searchParams.endpoint}
+      now={now}
     />
   );
 }

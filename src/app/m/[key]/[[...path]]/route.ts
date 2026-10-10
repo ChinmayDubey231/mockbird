@@ -19,6 +19,10 @@ export const runtime = "nodejs";
 
 const LOG_LIMIT = 500;
 const MAX_DELAY_MS = 8000; // Vercel's function timeout is the real ceiling
+/** How much of each response body the log keeps, pretty-printed. */
+const LOGGED_BODY_CHARS = 4000;
+/** Statuses that may not carry a body at all. */
+const NULL_BODY = new Set([101, 204, 205, 304]);
 
 type Params = { params: { key: string; path?: string[] } };
 
@@ -102,8 +106,10 @@ async function handle(req: NextRequest, { params }: Params) {
       body,
       statusCode: 404,
       durationMs: Date.now() - started,
+      delayMs: 0,
       matched: false,
       note: suggestion ? `did you mean ${suggestion}?` : "no endpoint matched",
+      ...loggedBody(payload),
     });
     return NextResponse.json(payload, { status: 404 });
   }
@@ -143,6 +149,7 @@ async function handle(req: NextRequest, { params }: Params) {
   if (failed) headers.set("x-mockbird-failure", "injected");
 
   const durationMs = Date.now() - started;
+  const sent = NULL_BODY.has(status) ? null : payload;
 
   // 6. Bookkeeping. Both writes are fire-and-forget relative to the response
   //    body, but still inside the request — no worker, no queue, no cron.
@@ -161,12 +168,26 @@ async function handle(req: NextRequest, { params }: Params) {
       body,
       statusCode: status,
       durationMs,
+      delayMs: failed ? 0 : delay,
       matched: true,
       note: failed ? "injected failure" : null,
+      ...loggedBody(sent),
     }),
   ]);
 
-  return NextResponse.json(payload, { status, headers });
+  // A 204 or 304 with a body is a malformed response, so those go out empty.
+  if (sent === null) return new NextResponse(null, { status, headers });
+  return NextResponse.json(sent, { status, headers });
+}
+
+/** The response body as the log keeps it: pretty-printed and cut short, with the size actually sent. */
+function loggedBody(payload: unknown): { responseBody: string | null; responseSize: number } {
+  if (payload === null || payload === undefined) return { responseBody: null, responseSize: 0 };
+  const pretty = JSON.stringify(payload, null, 2);
+  return {
+    responseBody: pretty.length > LOGGED_BODY_CHARS ? `${pretty.slice(0, LOGGED_BODY_CHARS)}\n…` : pretty,
+    responseSize: Buffer.byteLength(JSON.stringify(payload)),
+  };
 }
 
 async function resolveWorkspace(key: string): Promise<{ id: string } | null> {
@@ -218,8 +239,11 @@ async function writeLog(data: {
   body: unknown;
   statusCode: number;
   durationMs: number;
+  delayMs: number;
   matched: boolean;
   note: string | null;
+  responseBody: string | null;
+  responseSize: number;
 }) {
   try {
     await prisma.requestLog.create({
@@ -233,8 +257,11 @@ async function writeLog(data: {
         body: data.body === null ? undefined : (data.body as object),
         statusCode: data.statusCode,
         durationMs: data.durationMs,
+        delayMs: data.delayMs,
         matched: data.matched,
         note: data.note,
+        responseBody: data.responseBody,
+        responseSize: data.responseSize,
       },
     });
 

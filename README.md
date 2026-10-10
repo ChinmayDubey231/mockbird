@@ -2,8 +2,6 @@
 
 Describe an API in English, get a live mock endpoint in five seconds, with latency and failure injection built in.
 
-**Live:** _add your deployment URL here_
-
 ```
 $ curl -s https://mockbird.app/m/a8f3k2/orders
 
@@ -12,8 +10,6 @@ $ curl -s https://mockbird.app/m/a8f3k2/orders
   { "id": "ord_71bz", "customer": "Ananya Iyer", "total": 1290, "status": "pending" }
 ]
 ```
-
-_(Record a 20-second GIF here: type a description, watch the endpoint appear, curl the URL.)_
 
 ---
 
@@ -79,7 +75,7 @@ Matching rules, in `src/lib/match.ts`:
 
 **When nothing matches**, the 404 body lists every path the workspace actually serves and runs a Damerau-Levenshtein comparison against the requested path, so `GET /ordres` answers with `"didYouMean": "/orders"` instead of a dead end.
 
-There are 36 unit tests over this: `npm test`.
+The matcher and the path compiler have 22 unit tests between them, out of 39 in all: `npm test`.
 
 ### Token substitution
 
@@ -165,7 +161,7 @@ npm run db:push            # push the schema
 npm run seed               # workspace a8f3k2 with four example endpoints
 npm run dev
 
-npm test                   # 36 unit tests over the matcher and substitution
+npm test                   # 39 unit tests: path compiling, matching, substitution, path guessing
 npm run typecheck
 ```
 
